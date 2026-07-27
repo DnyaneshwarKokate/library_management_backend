@@ -181,3 +181,24 @@
   "msg": "Successfully connected to MySQL database!",
   "time": "2026-07-27 19:11:38"
 }
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 19:25:06"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 19:25:06"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 19:25:06"
+}
