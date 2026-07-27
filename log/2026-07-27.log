@@ -1,0 +1,7 @@
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 18:18:30"
+}

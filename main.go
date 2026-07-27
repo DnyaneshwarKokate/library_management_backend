@@ -6,12 +6,14 @@ import (
 
 	"library-management-backend/config"
 	"library-management-backend/database"
+	"library-management-backend/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 
+	utils.InitializeLogger()
 	gin.SetMode(gin.ReleaseMode)
 
 	cfg := config.LoadConfig()
