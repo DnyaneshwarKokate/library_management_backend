@@ -1,51 +1,62 @@
 package route
 
 import (
-	"net/http"
 	"os"
 
 	"library-management-backend/app"
 	"library-management-backend/constants"
 	"library-management-backend/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(ctl *app.App) *gin.Engine {
+func SetupRouter(ctl *app.ConsentRequestController) *gin.Engine {
 	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT", "PATCH"},
+		AllowHeaders:     []string{"*"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowAllOrigins:  false,
+		AllowOriginFunc:  func(origin string) bool { return true },
+		MaxAge:           86400,
+	}))
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		jwtSecret = "super_secret_jwt_key_library_app"
 	}
 
-	router.POST("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
+	router.POST("/health-check", func(c *gin.Context) {
+		c.JSON(200, gin.H{
 			"status":  "healthy",
 			"message": "Library Management API is running",
 		})
 	})
 
-	authGroup := router.Group("/api/auth")
+	// User Routes
+	usersGroup := router.Group("/user")
 	{
-		authGroup.POST("/register", ctl.ConsentRequestController.AuthController.Register)
-		authGroup.POST("/login", ctl.ConsentRequestController.AuthController.Login)
+		usersGroup.POST("/register", ctl.AuthController.Register)
+		usersGroup.POST("/login", ctl.AuthController.Login)
 	}
 
-	bookGroup := router.Group("/api/books")
+	// Books Routes
+	booksGroup := router.Group("/books")
 	{
-		bookGroup.POST("/list", ctl.ConsentRequestController.BookController.GetBooks)
-		bookGroup.POST("/details", ctl.ConsentRequestController.BookController.GetBookByUUID)
-		bookGroup.POST("/details/:uuid", ctl.ConsentRequestController.BookController.GetBookByUUID)
+		booksGroup.POST("/list", ctl.BookController.GetBooks)
+		booksGroup.POST("/details", ctl.BookController.GetBookByUUID)
+		booksGroup.POST("/create", middleware.AuthMiddleware(jwtSecret), middleware.RequireRole(constants.RoleAdmin), ctl.BookController.CreateBook)
+		booksGroup.POST("/update", middleware.AuthMiddleware(jwtSecret), middleware.RequireRole(constants.RoleAdmin), ctl.BookController.UpdateBook)
+		booksGroup.POST("/delete", middleware.AuthMiddleware(jwtSecret), middleware.RequireRole(constants.RoleAdmin), ctl.BookController.DeleteBook)
+	}
 
-		adminBookGroup := bookGroup.Group("", middleware.AuthMiddleware(jwtSecret), middleware.RequireRole(constants.RoleAdmin))
-		{
-			adminBookGroup.POST("/create", ctl.ConsentRequestController.BookController.CreateBook)
-			adminBookGroup.POST("/update", ctl.ConsentRequestController.BookController.UpdateBook)
-			adminBookGroup.POST("/update/:uuid", ctl.ConsentRequestController.BookController.UpdateBook)
-			adminBookGroup.POST("/delete", ctl.ConsentRequestController.BookController.DeleteBook)
-			adminBookGroup.POST("/delete/:uuid", ctl.ConsentRequestController.BookController.DeleteBook)
-		}
+	// Borrow Routes
+	borrowGroup := router.Group("/borrow", middleware.AuthMiddleware(jwtSecret))
+	{
+		borrowGroup.POST("/create", ctl.BorrowController.BorrowBook)
 	}
 
 	return router

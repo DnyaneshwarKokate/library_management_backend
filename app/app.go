@@ -11,18 +11,21 @@ type App struct {
 }
 
 type ConsentRequestController struct {
-	AuthController *controller.AuthController
-	BookController *controller.BookController
+	AuthController   *controller.AuthController
+	BookController   *controller.BookController
+	BorrowController *controller.BorrowController
 }
 
 type Services struct {
-	AuthService service.AuthService
-	BookService service.BookService
+	AuthService   service.AuthService
+	BookService   service.BookService
+	BorrowService service.BorrowService
 }
 
 type Repositories struct {
-	UserRepository repository.UserRepository
-	BookRepository repository.BookRepository
+	UserRepository   repository.UserRepository
+	BookRepository   repository.BookRepository
+	BorrowRepository repository.BorrowRepository
 }
 
 func InitApp() *App {
@@ -37,21 +40,24 @@ func InitApp() *App {
 
 func initRepositories() *Repositories {
 	return &Repositories{
-		UserRepository: repository.NewUserRepository(),
-		BookRepository: repository.NewBookRepository(),
+		UserRepository:   repository.NewUserRepository(),
+		BookRepository:   repository.NewBookRepository(),
+		BorrowRepository: repository.NewBorrowRepository(),
 	}
 }
 
 func initServices(repos *Repositories) *Services {
 	return &Services{
-		AuthService: service.NewAuthService(repos.UserRepository),
-		BookService: service.NewBookService(repos.BookRepository),
+		AuthService:   service.NewAuthService(repos.UserRepository),
+		BookService:   service.NewBookService(repos.BookRepository),
+		BorrowService: service.NewBorrowService(repos.BorrowRepository, repos.BookRepository, repos.UserRepository),
 	}
 }
 
 func initControllers(services *Services) *ConsentRequestController {
 	return &ConsentRequestController{
-		AuthController: controller.NewAuthController(services.AuthService),
-		BookController: controller.NewBookController(services.BookService),
+		AuthController:   controller.NewAuthController(services.AuthService),
+		BookController:   controller.NewBookController(services.BookService),
+		BorrowController: controller.NewBorrowController(services.BorrowService),
 	}
 }

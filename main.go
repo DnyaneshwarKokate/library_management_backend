@@ -33,7 +33,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	application := app.InitApp()
-	router := route.SetupRouter(application)
+	router := route.SetupRouter(application.ConsentRequestController)
 
 	port := os.Getenv("PORT")
 	if port == "" {

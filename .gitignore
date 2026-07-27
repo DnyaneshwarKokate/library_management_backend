@@ -43,7 +43,7 @@ dep.sh
 __debug_bin*
 # Logs
 log/
-*.log
+*.logx
 /api-docs/
 *.dockercmd
 .DS_Store

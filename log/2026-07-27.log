@@ -435,3 +435,77 @@
 [GIN] 2026/07/27 - 23:26:52 | 200 |   5.76ms |             ::1 | POST     "/api/books/update"
 [GIN] 2026/07/27 - 23:27:34 | 200 |   3.04ms |             ::1 | POST     "/api/books/list"
 [GIN] 2026/07/27 - 23:27:49 | 200 |   2.05ms |             ::1 | POST     "/api/books/list"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 23:43:54"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 23:43:54"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 23:43:54"
+}
+[GIN] 2026/07/27 - 23:43:57 | 404 |  1.833µs |             ::1 | POST     "/api/auth/register"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/repository/user_repository.go:45",
+  "func": "library-management-backend/repository.(*userRepository).StoreUserWithtx",
+  "level": "info",
+  "msg": "userDetails created successfully: &{ID:2 UUID:d36a773c947444b1bc0682b35aae83b2 Name:Ritesh Gadakh Email:ritesh.gadakh@choicetechlab.com PasswordHash:$2a$10$9RWDxNEZ66Bxmn.13qlZnOvOPrcRupilR7FMc0rqYtx4hPnkOLcta Role:MEMBER Status:ACTIVE BorrowRecords:[] CreatedBy:<nil> UpdatedBy:<nil> CreatedAt:2026-07-27 23:44:17.309 +0530 IST UpdatedAt:2026-07-27 23:44:17.309 +0530 IST DeletedAt:<nil>}",
+  "time": "2026-07-27 23:44:17"
+}
+[GIN] 2026/07/27 - 23:44:17 | 201 | 111.15ms |             ::1 | POST     "/user/register"
+[GIN] 2026/07/27 - 23:45:08 | 404 |  2.083µs |             ::1 | POST     "/api/auth/login"
+[GIN] 2026/07/27 - 23:45:17 | 401 | 106.36ms |             ::1 | POST     "/user/login"
+[GIN] 2026/07/27 - 23:45:25 | 401 |  108.3ms |             ::1 | POST     "/user/login"
+[GIN] 2026/07/27 - 23:45:29 | 200 | 108.27ms |             ::1 | POST     "/user/login"
+[GIN] 2026/07/27 - 23:45:44 | 404 |   2.44ms |             ::1 | POST     "/borrow/create"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/repository/borrow_repository.go:54",
+  "func": "library-management-backend/repository.(*borrowRepository).StoreBorrowRecordWithtx",
+  "level": "info",
+  "msg": "Borrow record created successfully: &{ID:1 UUID:a15bf8c9761e48cf82d57d06ae719be1 UserID:2 User:<nil> BookID:2 Book:<nil> BorrowDate:2026-07-27 23:46:06.394856 +0530 IST m=+132.004513543 DueDate:2026-08-10 23:46:06.394856 +0530 IST ReturnedAt:<nil> Status:BORROWED CreatedBy:<nil> UpdatedBy:<nil> CreatedAt:2026-07-27 23:46:06.395 +0530 IST UpdatedAt:2026-07-27 23:46:06.395 +0530 IST DeletedAt:<nil>}",
+  "time": "2026-07-27 23:46:06"
+}
+[GIN] 2026/07/27 - 23:46:06 | 201 |   8.38ms |             ::1 | POST     "/borrow/create"
+[GIN] 2026/07/27 - 23:46:32 | 400 |   3.26ms |             ::1 | POST     "/borrow/create"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 23:49:45"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 23:49:45"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 23:49:45"
+}
+[GIN] 2026/07/27 - 23:49:52 | 200 |  108.1ms |             ::1 | POST     "/user/login"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/repository/borrow_repository.go:54",
+  "func": "library-management-backend/repository.(*borrowRepository).StoreBorrowRecordWithtx",
+  "level": "info",
+  "msg": "Borrow record created successfully: &{ID:2 UUID:91f8e3f48ef8473b9d7ddb10a06ae507 UserID:1 User:<nil> BookID:2 Book:<nil> BorrowDate:2026-07-27 23:50:06.984801 +0530 IST m=+21.960165584 DueDate:2026-08-10 23:50:06.984801 +0530 IST ReturnedAt:<nil> Status:BORROWED CreatedBy:0x14000472018 UpdatedBy:<nil> CreatedAt:2026-07-27 23:50:06.985 +0530 IST UpdatedAt:2026-07-27 23:50:06.985 +0530 IST DeletedAt:<nil>}",
+  "time": "2026-07-27 23:50:06"
+}
+[GIN] 2026/07/27 - 23:50:06 | 201 |  10.88ms |             ::1 | POST     "/borrow/create"
