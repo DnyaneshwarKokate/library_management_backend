@@ -8,11 +8,13 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email` VARCHAR(100) NOT NULL UNIQUE,
   `password_hash` VARCHAR(255) NOT NULL,
   `role` ENUM('ADMIN', 'MEMBER') NOT NULL DEFAULT 'MEMBER',
+  `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
   `created_by` INT NULL,
   `updated_by` INT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  INDEX `idx_users_status` (`status`),
   INDEX `idx_users_deleted_at` (`deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

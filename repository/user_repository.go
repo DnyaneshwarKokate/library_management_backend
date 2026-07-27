@@ -11,7 +11,6 @@ import (
 )
 
 type UserRepository interface {
-	StoreUser(user *model.User) (*model.User, error)
 	StoreUserWithtx(tx *gorm.DB, userDetails *model.User) (*model.User, error)
 	FindByEmail(email string) (*model.User, error)
 	FindByUUID(uuid string) (*model.User, error)
@@ -34,11 +33,10 @@ func (r *userRepository) getDB() *gorm.DB {
 	return database.LibraryManagementDB
 }
 
-func (r *userRepository) StoreUser(user *model.User) (*model.User, error) {
-	return r.StoreUserWithtx(r.getDB(), user)
-}
-
 func (r *userRepository) StoreUserWithtx(tx *gorm.DB, userDetails *model.User) (*model.User, error) {
+	if tx == nil {
+		tx = r.getDB()
+	}
 	result := tx.Create(userDetails)
 	if result.Error != nil {
 		logrus.Errorf("Error creating userDetails : %v", result.Error)

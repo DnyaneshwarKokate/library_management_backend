@@ -24,13 +24,12 @@ func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if !(len(parts) == 2 && strings.EqualFold(parts[0], "Bearer")) {
-			utils.UnauthorizedAbortWithJSON(c, "Authorization header format must be Bearer {token}")
-			return
+		tokenString := strings.TrimSpace(authHeader)
+		parts := strings.SplitN(tokenString, " ", 2)
+		if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+			tokenString = strings.TrimSpace(parts[1])
 		}
 
-		tokenString := parts[1]
 		claims, err := utils.ValidateToken(tokenString, jwtSecret)
 		if err != nil {
 			utils.UnauthorizedAbortWithJSON(c, "Invalid or expired authorization token")

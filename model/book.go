@@ -14,10 +14,10 @@ type Book struct {
 	TotalCopies     int            `gorm:"not null" json:"total_copies"`
 	AvailableCopies int            `gorm:"not null" json:"available_copies"`
 	BorrowRecords   []BorrowRecord `gorm:"foreignKey:BookID" json:"borrow_records,omitempty"`
-	CreatedBy       *int           `gorm:"column:created_by" json:"created_by"`
-	UpdatedBy       *int           `gorm:"column:updated_by" json:"updated_by"`
-	CreatedAt       time.Time      `gorm:"column:created_at;type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt       time.Time      `gorm:"column:updated_at;type:timestamp;default:CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" json:"updated_at"`
+	CreatedBy       *uint          `gorm:"column:created_by" json:"created_by"`
+	UpdatedBy       *uint          `gorm:"column:updated_by" json:"updated_by"`
+	CreatedAt       time.Time      `gorm:"column:created_at;autoCreateTime" json:"created_at"`
+	UpdatedAt       time.Time      `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
 	DeletedAt       *time.Time     `gorm:"column:deleted_at;type:timestamp;default:NULL" json:"deleted_at"`
 }
 

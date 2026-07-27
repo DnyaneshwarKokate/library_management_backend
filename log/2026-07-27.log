@@ -259,3 +259,179 @@
 [GIN] 2026/07/27 - 22:33:03 | 401 |   3.89ms |             ::1 | POST     "/api/auth/login"
 [GIN] 2026/07/27 - 22:33:13 | 201 | 111.73ms |             ::1 | POST     "/api/auth/register"
 [GIN] 2026/07/27 - 22:33:27 | 200 | 108.06ms |             ::1 | POST     "/api/auth/login"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 22:45:42"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 22:45:42"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 22:45:42"
+}
+[GIN] 2026/07/27 - 22:47:26 | 200 | 109.28ms |             ::1 | POST     "/api/auth/login"
+[GIN] 2026/07/27 - 22:47:43 | 401 |   34.5µs |             ::1 | POST     "/api/books"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 22:56:36"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 22:56:36"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 22:56:36"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/repository/book_repository.go:50",
+  "func": "library-management-backend/repository.(*bookRepository).StoreBookWithtx",
+  "level": "info",
+  "msg": "Book created successfully: &{ID:1 UUID:712087dded414389b132c76dfb4afab4 Title:Clean Code Author:Robert C. Martin ISBN:978-0132350884 Category:Programming TotalCopies:10 AvailableCopies:10 BorrowRecords:[] CreatedBy:<nil> UpdatedBy:<nil> CreatedAt:0001-01-01 00:00:00 +0000 UTC UpdatedAt:0001-01-01 00:00:00 +0000 UTC DeletedAt:<nil>}",
+  "time": "2026-07-27 22:56:57"
+}
+[GIN] 2026/07/27 - 22:56:57 | 201 |   8.15ms |             ::1 | POST     "/api/books"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 23:07:57"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 23:07:57"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 23:07:57"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/repository/book_repository.go:55",
+  "func": "library-management-backend/repository.(*bookRepository).StoreBookWithtx",
+  "level": "info",
+  "msg": "Book created successfully: &{ID:2 UUID:b0ce553b94394a38a22e808ddd40313f Title:Clean Architecture Author:Robert C. Martin ISBN:978-0134494166 Category:Software Architecture TotalCopies:8 AvailableCopies:8 BorrowRecords:[] CreatedBy:0x14000393698 UpdatedBy:<nil> CreatedAt:2026-07-27 23:08:48.556 +0530 IST UpdatedAt:2026-07-27 23:08:48.556 +0530 IST DeletedAt:<nil>}",
+  "time": "2026-07-27 23:08:48"
+}
+[GIN] 2026/07/27 - 23:08:48 | 201 |     10ms |             ::1 | POST     "/api/books"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 23:13:41"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 23:13:41"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 23:13:41"
+}
+[GIN] 2026/07/27 - 23:13:55 | 200 |   7.87ms |             ::1 | POST     "/api/books/list"
+[GIN] 2026/07/27 - 23:14:15 | 200 |    2.5ms |             ::1 | POST     "/api/books/list"
+[GIN] 2026/07/27 - 23:14:39 | 200 |   1.68ms |             ::1 | POST     "/api/books/list"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 23:16:58"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 23:16:58"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 23:16:58"
+}
+[GIN] 2026/07/27 - 23:17:08 | 200 |   4.11ms |             ::1 | POST     "/api/books/list"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 23:21:00"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 23:21:00"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 23:21:00"
+}
+[GIN] 2026/07/27 - 23:21:04 | 404 |   2.47ms |             ::1 | POST     "/api/books/details"
+[GIN] 2026/07/27 - 23:21:32 | 200 |    2.7ms |             ::1 | POST     "/api/books/details"
+[GIN] 2026/07/27 - 23:22:39 | 401 | 157.875µs |             ::1 | POST     "/api/books/update"
+[GIN] 2026/07/27 - 23:22:48 | 200 | 109.14ms |             ::1 | POST     "/api/auth/login"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/repository/book_repository.go:144",
+  "func": "library-management-backend/repository.(*bookRepository).UpdateBookWithtx",
+  "level": "info",
+  "msg": "Book updated successfully: &{ID:2 UUID:b0ce553b94394a38a22e808ddd40313f Title:Clean Code: Handbook of Agile Software Craftsmanship Author:Robert C. Martin ISBN:978-0134494166 Category:Software Engineering TotalCopies:15 AvailableCopies:15 BorrowRecords:[] CreatedBy:0x14000427198 UpdatedBy:0x14000427078 CreatedAt:2026-07-27 23:08:49 +0530 IST UpdatedAt:2026-07-27 23:23:06.246 +0530 IST DeletedAt:<nil>}",
+  "time": "2026-07-27 23:23:06"
+}
+[GIN] 2026/07/27 - 23:23:06 | 200 |   8.82ms |             ::1 | POST     "/api/books/update"
+[GIN] 2026/07/27 - 23:24:51 | 401 | 84.333µs |             ::1 | POST     "/api/books/delete"
+[GIN] 2026/07/27 - 23:25:05 | 200 |  109.6ms |             ::1 | POST     "/api/auth/login"
+[GIN] 2026/07/27 - 23:25:30 | 404 |   1.02ms |             ::1 | POST     "/api/books/delete"
+[GIN] 2026/07/27 - 23:25:44 | 200 |   5.17ms |             ::1 | POST     "/api/books/delete"
+[GIN] 2026/07/27 - 23:26:04 | 404 |    1.3ms |             ::1 | POST     "/api/books/delete"
+[GIN] 2026/07/27 - 23:26:38 | 404 |   1.96ms |             ::1 | POST     "/api/books/update"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/repository/book_repository.go:144",
+  "func": "library-management-backend/repository.(*bookRepository).UpdateBookWithtx",
+  "level": "info",
+  "msg": "Book updated successfully: &{ID:2 UUID:b0ce553b94394a38a22e808ddd40313f Title:Clean Code: Handbook of Agile Software Craftsmanship Author:Robert C. Martin ISBN:978-0134494166 Category:Software Engineering TotalCopies:15 AvailableCopies:15 BorrowRecords:[] CreatedBy:0x140003bfc58 UpdatedBy:0x140003bfb30 CreatedAt:2026-07-27 23:08:49 +0530 IST UpdatedAt:2026-07-27 23:26:52.68 +0530 IST DeletedAt:<nil>}",
+  "time": "2026-07-27 23:26:52"
+}
+[GIN] 2026/07/27 - 23:26:52 | 200 |   5.76ms |             ::1 | POST     "/api/books/update"
+[GIN] 2026/07/27 - 23:27:34 | 200 |   3.04ms |             ::1 | POST     "/api/books/list"
+[GIN] 2026/07/27 - 23:27:49 | 200 |   2.05ms |             ::1 | POST     "/api/books/list"

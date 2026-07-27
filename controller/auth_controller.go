@@ -82,6 +82,10 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 			utils.UnauthorizedResponse(c, err.Error())
 			return
 		}
+		if errors.Is(err, service.ErrUserInactive) {
+			utils.ForbiddenResponse(c, err.Error())
+			return
+		}
 		utils.InternalServerErrorResponse(c, err)
 		return
 	}

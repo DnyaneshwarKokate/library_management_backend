@@ -14,6 +14,7 @@ import (
 var (
 	ErrDuplicateEmail    = errors.New("email is already registered")
 	ErrInvalidCredential = errors.New("invalid email or password")
+	ErrUserInactive      = errors.New("user account is inactive")
 )
 
 type AuthService interface {
@@ -51,6 +52,10 @@ func (s *authService) Register(req dto.RegisterRequest) error {
 	if role == "" {
 		role = constants.RoleMember
 	}
+	status := req.Status
+	if status == "" {
+		status = constants.StatusActive
+	}
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		return err
@@ -61,9 +66,10 @@ func (s *authService) Register(req dto.RegisterRequest) error {
 		Email:        req.Email,
 		PasswordHash: hashedPassword,
 		Role:         role,
+		Status:       status,
 	}
 
-	_, err = s.userRepo.StoreUser(user)
+	_, err = s.userRepo.StoreUserWithtx(nil, user)
 	return err
 }
 
@@ -74,6 +80,9 @@ func (s *authService) Login(req dto.LoginRequest) (*dto.AuthResponse, error) {
 	}
 	if user == nil {
 		return nil, ErrInvalidCredential
+	}
+	if user.Status == constants.StatusInactive {
+		return nil, ErrUserInactive
 	}
 	if !utils.CheckPassword(req.Password, user.PasswordHash) {
 		return nil, ErrInvalidCredential
@@ -91,6 +100,7 @@ func (s *authService) Login(req dto.LoginRequest) (*dto.AuthResponse, error) {
 			Name:      user.Name,
 			Email:     user.Email,
 			Role:      user.Role,
+			Status:    user.Status,
 			CreatedAt: user.CreatedAt,
 		},
 	}, nil
