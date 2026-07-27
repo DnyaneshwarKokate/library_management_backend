@@ -41,7 +41,9 @@ go.mod
 go.sum
 dep.sh
 __debug_bin*
-
+# Logs
+log/
+*.log
 /api-docs/
 *.dockercmd
 .DS_Store
