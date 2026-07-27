@@ -1,0 +1,45 @@
+# Compiled Object files, Static and Dynamic libs
+*.o
+*.a
+*.so
+*.env
+*.sh
+
+# Output files
+*.exe
+*.test
+*.prof
+
+# Binary files
+*.bin
+*.out
+
+# Dependency directories (go modules)
+/vendor/
+
+
+/storage/logs/*
+/logs/*
+/storage/*
+/signature
+.env
+ssl/uat/jwtRSA256-public-uat.pem
+Config/samplePermission.json
+storage/import/
+sonar-project.properties
+/storage/ssl
+/storage/logs
+.scannerwork
+/vscode
+*.json
+*.http
+/test
+*.properties
+go.mod
+go.sum
+dep.sh
+__debug_bin*
+
+/api-docs/
+*.dockercmd
+.DS_Store
