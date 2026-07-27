@@ -63,7 +63,8 @@ func (s *authService) Register(req dto.RegisterRequest) error {
 		Role:         role,
 	}
 
-	return s.userRepo.Create(user)
+	_, err = s.userRepo.StoreUser(user)
+	return err
 }
 
 func (s *authService) Login(req dto.LoginRequest) (*dto.AuthResponse, error) {

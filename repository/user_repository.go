@@ -6,11 +6,13 @@ import (
 	"library-management-backend/database"
 	"library-management-backend/model"
 
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
-	Create(user *model.User) error
+	StoreUser(user *model.User) (*model.User, error)
+	StoreUserWithtx(tx *gorm.DB, userDetails *model.User) (*model.User, error)
 	FindByEmail(email string) (*model.User, error)
 	FindByUUID(uuid string) (*model.User, error)
 	FindByID(id uint) (*model.User, error)
@@ -32,8 +34,18 @@ func (r *userRepository) getDB() *gorm.DB {
 	return database.LibraryManagementDB
 }
 
-func (r *userRepository) Create(user *model.User) error {
-	return r.getDB().Create(user).Error
+func (r *userRepository) StoreUser(user *model.User) (*model.User, error) {
+	return r.StoreUserWithtx(r.getDB(), user)
+}
+
+func (r *userRepository) StoreUserWithtx(tx *gorm.DB, userDetails *model.User) (*model.User, error) {
+	result := tx.Create(userDetails)
+	if result.Error != nil {
+		logrus.Errorf("Error creating userDetails : %v", result.Error)
+		return nil, result.Error
+	}
+	logrus.Infof("userDetails created successfully: %+v", userDetails)
+	return userDetails, nil
 }
 
 func (r *userRepository) FindByEmail(email string) (*model.User, error) {

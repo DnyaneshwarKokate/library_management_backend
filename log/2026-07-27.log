@@ -202,3 +202,60 @@
   "msg": "Successfully connected to MySQL database!",
   "time": "2026-07-27 19:25:06"
 }
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 22:23:14"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 22:23:14"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 22:23:14"
+}
+[GIN] 2026/07/27 - 22:26:11 | 201 | 117.28ms |             ::1 | POST     "/api/auth/register"
+[GIN] 2026/07/27 - 22:28:14 | 201 | 114.04ms |             ::1 | POST     "/api/auth/register"
+[GIN] 2026/07/27 - 22:29:30 | 201 | 114.28ms |             ::1 | POST     "/api/auth/register"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 22:31:49"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 22:31:49"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 22:31:49"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/validator_util.go:91",
+  "func": "library-management-backend/utils.ValidateRequest",
+  "level": "error",
+  "msg": "errorMessageEmail must be a valid email address|The Password field must be at least 6 characters long.",
+  "time": "2026-07-27 22:31:54"
+}
+[GIN] 2026/07/27 - 22:31:54 | 422 |   1.82ms |             ::1 | POST     "/api/auth/register"
+[GIN] 2026/07/27 - 22:32:54 | 401 |   2.96ms |             ::1 | POST     "/api/auth/login"
+[GIN] 2026/07/27 - 22:33:03 | 401 |   3.89ms |             ::1 | POST     "/api/auth/login"
+[GIN] 2026/07/27 - 22:33:13 | 201 | 111.73ms |             ::1 | POST     "/api/auth/register"
+[GIN] 2026/07/27 - 22:33:27 | 200 | 108.06ms |             ::1 | POST     "/api/auth/login"

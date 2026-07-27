@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"net/http"
+	"errors"
 	"strings"
 
 	"library-management-backend/constants"
@@ -16,32 +16,27 @@ const (
 	ContextUserRole = "user_role"
 )
 
-// AuthMiddleware validates incoming JWT tokens and injects claims into Gin context.
 func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			utils.SendError(c, http.StatusUnauthorized, "Authorization header is required", nil)
-			c.Abort()
+			utils.UnauthorizedAbortWithJSON(c, "Authorization header is required")
 			return
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
 		if !(len(parts) == 2 && strings.EqualFold(parts[0], "Bearer")) {
-			utils.SendError(c, http.StatusUnauthorized, "Authorization header format must be Bearer {token}", nil)
-			c.Abort()
+			utils.UnauthorizedAbortWithJSON(c, "Authorization header format must be Bearer {token}")
 			return
 		}
 
 		tokenString := parts[1]
 		claims, err := utils.ValidateToken(tokenString, jwtSecret)
 		if err != nil {
-			utils.SendError(c, http.StatusUnauthorized, "Invalid or expired authorization token", err.Error())
-			c.Abort()
+			utils.UnauthorizedAbortWithJSON(c, "Invalid or expired authorization token")
 			return
 		}
 
-		// Inject user context
 		c.Set(ContextUserID, claims.UserID)
 		c.Set(ContextUserUUID, claims.UserUUID)
 		c.Set(ContextUserRole, claims.Role)
@@ -50,20 +45,17 @@ func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 	}
 }
 
-// RequireRole restricts access to endpoints based on allowed user roles.
 func RequireRole(allowedRoles ...constants.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roleVal, exists := c.Get(ContextUserRole)
 		if !exists {
-			utils.SendError(c, http.StatusUnauthorized, "User context missing", nil)
-			c.Abort()
+			utils.UnauthorizedAbortWithJSON(c, "User context missing")
 			return
 		}
 
 		userRole, ok := roleVal.(constants.Role)
 		if !ok {
-			utils.SendError(c, http.StatusInternalServerError, "Invalid role context type", nil)
-			c.Abort()
+			utils.InternalServerErrorAbortWithJSON(c, errors.New("invalid role context type"))
 			return
 		}
 
@@ -74,7 +66,6 @@ func RequireRole(allowedRoles ...constants.Role) gin.HandlerFunc {
 			}
 		}
 
-		utils.SendError(c, http.StatusForbidden, "Access denied: insufficient permissions", nil)
-		c.Abort()
+		utils.ForbiddenAbortWithJSON(c, "Access denied: insufficient permissions")
 	}
 }

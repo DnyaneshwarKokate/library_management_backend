@@ -7,15 +7,15 @@ import (
 )
 
 type RegisterRequest struct {
-	Name     string         `json:"name" binding:"required,min=2,max=100"`
-	Email    string         `json:"email" binding:"required,email,max=100"`
-	Password string         `json:"password" binding:"required,min=6,max=100"`
-	Role     constants.Role `json:"role" binding:"omitempty,oneof=ADMIN MEMBER"`
+	Name     string         `json:"name" validate:"required,min=2,max=100" binding:"required,min=2,max=100"`
+	Email    string         `json:"email" validate:"required,email,max=100" binding:"required,email,max=100"`
+	Password string         `json:"password" validate:"required,min=6,max=100" binding:"required,min=6,max=100"`
+	Role     constants.Role `json:"role" validate:"omitempty,oneof=ADMIN MEMBER" binding:"omitempty,oneof=ADMIN MEMBER"`
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email    string `json:"email" validate:"required,email" binding:"required,email"`
+	Password string `json:"password" validate:"required" binding:"required"`
 }
 
 type UserResponse struct {

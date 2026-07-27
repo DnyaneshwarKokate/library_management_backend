@@ -1,14 +1,16 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
-	"net/http"
+	"fmt"
 
 	"library-management-backend/dto"
 	"library-management-backend/service"
 	"library-management-backend/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type AuthController struct {
@@ -22,41 +24,67 @@ func NewAuthController(authService service.AuthService) *AuthController {
 }
 
 func (ctrl *AuthController) Register(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Error("Recovered in Register: ", r)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", r))
+		}
+	}()
+
 	var req dto.RegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.SendValidationError(c, err)
+	if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
+		logrus.Errorf("[RegisterController] Invalid payload | error=%v", err)
+		utils.ValidationResponse(c, "invalid request data")
+		return
+	}
+
+	if validationResp := utils.ValidateRequest(c, req); validationResp != nil {
+		utils.ValidationResponse(c, validationResp.(string))
 		return
 	}
 
 	err := ctrl.authService.Register(req)
 	if err != nil {
 		if errors.Is(err, service.ErrDuplicateEmail) {
-			utils.SendError(c, http.StatusConflict, err.Error(), nil)
+			utils.ConflictResponse(c, err.Error())
 			return
 		}
-		utils.SendError(c, http.StatusInternalServerError, "Failed to register user", err.Error())
+		utils.InternalServerErrorResponse(c, err)
 		return
 	}
 
-	utils.SendSuccess(c, http.StatusCreated, "User registered successfully", nil)
+	utils.CreatedResponse(c, "User registered successfully", nil)
 }
 
 func (ctrl *AuthController) Login(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Error("Recovered in Login: ", r)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", r))
+		}
+	}()
+
 	var req dto.LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.SendValidationError(c, err)
+	if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
+		logrus.Errorf("[LoginController] Invalid payload | error=%v", err)
+		utils.ValidationResponse(c, "invalid request data")
+		return
+	}
+
+	if validationResp := utils.ValidateRequest(c, req); validationResp != nil {
+		utils.ValidationResponse(c, validationResp.(string))
 		return
 	}
 
 	res, err := ctrl.authService.Login(req)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidCredential) {
-			utils.SendError(c, http.StatusUnauthorized, err.Error(), nil)
+			utils.UnauthorizedResponse(c, err.Error())
 			return
 		}
-		utils.SendError(c, http.StatusInternalServerError, "Failed to log in", err.Error())
+		utils.InternalServerErrorResponse(c, err)
 		return
 	}
 
-	utils.SendSuccess(c, http.StatusOK, "Login successful", res)
+	utils.SuccessResponse(c, "Login successful", res)
 }
