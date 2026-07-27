@@ -5,3 +5,179 @@
   "msg": "logFileName: 2026-07-27.log",
   "time": "2026-07-27 18:18:30"
 }
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 19:06:18"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 19:06:18"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:17",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "CrowdFunding@dsn : :root@123@tcp(127.0.0.1:3306)/?charset=utf8mb4&parseTime=True&loc=Local&sql_mode=''",
+  "time": "2026-07-27 19:06:18"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:21",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "error",
+  "msg": "Failed to connect to the database:Error 1045 (28000): Access denied for user ''@'localhost' (using password: YES)",
+  "time": "2026-07-27 19:06:18"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:30",
+  "func": "main.main",
+  "level": "fatal",
+  "msg": "Failed to initialize database: Error 1045 (28000): Access denied for user ''@'localhost' (using password: YES)",
+  "time": "2026-07-27 19:06:18"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 19:06:37"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 19:06:37"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:17",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "CrowdFunding@dsn : :root@123@tcp(127.0.0.1:3306)/?charset=utf8mb4&parseTime=True&loc=Local&sql_mode=''",
+  "time": "2026-07-27 19:06:37"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:21",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "error",
+  "msg": "Failed to connect to the database:Error 1045 (28000): Access denied for user ''@'localhost' (using password: YES)",
+  "time": "2026-07-27 19:06:37"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:30",
+  "func": "main.main",
+  "level": "fatal",
+  "msg": "Failed to initialize database: Error 1045 (28000): Access denied for user ''@'localhost' (using password: YES)",
+  "time": "2026-07-27 19:06:37"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 19:07:08"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 19:07:08"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:17",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "CrowdFunding@dsn : root:root@123@tcp(127.0.0.1:3306)/library_db?charset=utf8mb4&parseTime=True&loc=Local&sql_mode=''",
+  "time": "2026-07-27 19:07:08"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:41",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 19:07:32"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 19:07:32"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:17",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "CrowdFunding@dsn : root:root@123@tcp(127.0.0.1:3306)/library_db?charset=utf8mb4&parseTime=True&loc=Local&sql_mode=''",
+  "time": "2026-07-27 19:07:32"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:41",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 19:07:48"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 19:07:48"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:17",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "CrowdFunding@dsn : root:root@123@tcp(127.0.0.1:3306)/library_db?charset=utf8mb4&parseTime=True&loc=Local&sql_mode=''",
+  "time": "2026-07-27 19:07:48"
+}
+[GIN] 2026/07/27 - 19:08:16 | 201 | 122.02ms |             ::1 | POST     "/api/auth/register"
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:41",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 19:10:00"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 19:10:00"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 19:10:00"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/utils/logger_utils.go:40",
+  "func": "library-management-backend/utils.InitializeLogger",
+  "level": "debug",
+  "msg": "logFileName: 2026-07-27.log",
+  "time": "2026-07-27 19:11:38"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/main.go:25",
+  "func": "main.init.0",
+  "level": "info",
+  "msg": "Environment variables loaded successfully.",
+  "time": "2026-07-27 19:11:38"
+}
+{
+  "file": "/Users/dnyaneshwarkokate/go/library_management_backend/database/database.go:35",
+  "func": "library-management-backend/database.InitLibraryManagementDB",
+  "level": "info",
+  "msg": "Successfully connected to MySQL database!",
+  "time": "2026-07-27 19:11:38"
+}

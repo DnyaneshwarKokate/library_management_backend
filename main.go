@@ -1,38 +1,47 @@
 package main
 
 import (
+	"flag"
 	"log"
-	"net/http"
+	"os"
 
-	"library-management-backend/config"
+	"library-management-backend/app"
 	"library-management-backend/database"
+	"library-management-backend/route"
 	"library-management-backend/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
-func main() {
-
+func init() {
+	envFile := flag.String("env", ".env", "specify the env file name")
+	flag.Parse()
+	if err := godotenv.Load(*envFile); err != nil {
+		logrus.Printf("Notice: Could not load %s file: %v", *envFile, err)
+	}
 	utils.InitializeLogger()
+	logrus.Infof("Environment variables loaded successfully.")
+}
+
+func main() {
+	if err := database.InitLibraryManagementDB(); err != nil {
+		logrus.Fatalf("Failed to initialize database: %v", err)
+	}
+
 	gin.SetMode(gin.ReleaseMode)
 
-	cfg := config.LoadConfig()
-	db := database.ConnectDB(cfg)
-	_ = db
+	application := app.InitApp()
+	router := route.SetupRouter(application)
 
-	router := gin.New()
-	router.Use(gin.Recovery())
-	router.SetTrustedProxies(nil)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Printf("🚀 Server running on port %s", port)
 
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "healthy",
-			"message": "Library Management API is running",
-		})
-	})
-	log.Printf("🚀 Server running on port %s", cfg.Port)
-
-	if err := router.Run(":" + cfg.Port); err != nil {
+	if err := router.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }

@@ -1,42 +1,37 @@
 package database
 
 import (
-	"fmt"
-	"log"
+	"library-management-backend/config"
 	"time"
 
-	"library-management-backend/config"
-
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
-func ConnectDB(cfg *config.Config) *gorm.DB {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		cfg.DBUser,
-		cfg.DBPassword,
-		cfg.DBHost,
-		cfg.DBPort,
-		cfg.DBName,
-	)
+var LibraryManagementDB *gorm.DB
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
+func InitLibraryManagementDB() error {
+	dbConfig := config.GetPrimaryMySQLDBConfig()
+	dsn := dbConfig.Username + ":" + dbConfig.Password + "@tcp(" + dbConfig.Host + ":" + dbConfig.Port + ")/" + dbConfig.Database + "?charset=utf8mb4&parseTime=True&loc=Local&sql_mode=''"
+	
+	var err error
+	LibraryManagementDB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Failed to connect to MySQL database: %v", err)
+		logrus.Error("Failed to connect to MySQL database:", err)
+		return err
 	}
 
-	sqlDB, err := db.DB()
+	sqlDB, err := LibraryManagementDB.DB()
 	if err != nil {
-		log.Fatalf("Failed to configure SQL database pool: %v", err)
+		logrus.Error("Failed to configure SQL database pool:", err)
+		return err
 	}
 
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetConnMaxLifetime(1 * time.Hour)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	log.Println("Successfully connected to MySQL database!")
-	return db
+	logrus.Info("Successfully connected to MySQL database!")
+	return nil
 }
