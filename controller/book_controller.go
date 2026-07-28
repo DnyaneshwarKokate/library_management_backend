@@ -16,7 +16,7 @@ import (
 
 type BookController interface {
 	CreateBook(c *gin.Context)
-	GetBooks(c *gin.Context)
+	GetBooksList(c *gin.Context)
 	GetBookByUUID(c *gin.Context)
 	UpdateBook(c *gin.Context)
 	DeleteBook(c *gin.Context)
@@ -78,29 +78,42 @@ func (ctl *bookController) CreateBook(c *gin.Context) {
 	utils.CreatedResponse(c, "Book created successfully", res)
 }
 
-func (ctl *bookController) GetBooks(c *gin.Context) {
+func (ctl *bookController) GetBooksList(c *gin.Context) {
 	defer func() {
 		if panicInfo := recover(); panicInfo != nil {
-			logrus.Errorf("GetBooks@Controller panic: %v", panicInfo)
+			logrus.Error("GetBooksList@panic:", panicInfo)
 			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", panicInfo))
 		}
 	}()
 
-	var filter dto.BookFilter
+	var req dto.BookFilter
 	if c.Request.Body != nil && c.Request.ContentLength > 0 {
-		_ = json.NewDecoder(c.Request.Body).Decode(&filter)
-	}
-	if filter.Limit <= 0 && filter.Offset <= 0 && filter.Search == "" && filter.Category == "" {
-		_ = c.ShouldBindQuery(&filter)
+		if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
+			logrus.Error("Invalid request body:", err)
+			utils.ValidationResponse(c, "Invalid request data")
+			return
+		}
+	} else {
+		_ = c.ShouldBindQuery(&req)
 	}
 
-	res, err := ctl.bookService.GetBooks(filter)
+	if validationResp := utils.ValidateRequest(c, req); validationResp != nil {
+		utils.ValidationResponse(c, validationResp.(string))
+		return
+	}
+
+	response, total, filtered, err := ctl.bookService.GetBooksList(req)
 	if err != nil {
+		logrus.Error("GetBooksList@Error:", err)
 		utils.InternalServerErrorResponse(c, err)
 		return
 	}
 
-	utils.SuccessResponse(c, "Books fetched successfully", res)
+	utils.SuccessResponse(c, "Books list fetched successfully", map[string]interface{}{
+		"data":         response,
+		"filter_count": filtered,
+		"total_count":  total,
+	})
 }
 
 func (ctl *bookController) GetBookByUUID(c *gin.Context) {

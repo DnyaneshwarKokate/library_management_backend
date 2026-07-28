@@ -46,7 +46,7 @@ func SetupRouter(ctl *app.ConsentRequestController) *gin.Engine {
 	// Books Routes
 	booksGroup := router.Group("/books")
 	{
-		booksGroup.POST("/list", ctl.BookController.GetBooks)
+		booksGroup.POST("/list", ctl.BookController.GetBooksList)
 		booksGroup.POST("/details", ctl.BookController.GetBookByUUID)
 		booksGroup.POST("/create", middleware.AuthMiddleware(jwtSecret), middleware.RequireRole(constants.RoleAdmin), ctl.BookController.CreateBook)
 		booksGroup.POST("/update", middleware.AuthMiddleware(jwtSecret), middleware.RequireRole(constants.RoleAdmin), ctl.BookController.UpdateBook)

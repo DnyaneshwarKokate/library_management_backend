@@ -20,7 +20,7 @@ var (
 
 type BookService interface {
 	CreateBook(req dto.CreateBookRequest, adminID uint) (*dto.BookResponse, error)
-	GetBooks(filter dto.BookFilter) (*dto.BookListResponse, error)
+	GetBooksList(filter dto.BookFilter) ([]dto.BookResponse, int64, int64, error)
 	GetBookByUUID(uuid string) (*dto.BookResponse, error)
 	UpdateBook(uuid string, req dto.UpdateBookRequest, adminID uint) (*dto.BookResponse, error)
 	DeleteBook(uuid string) error
@@ -81,8 +81,8 @@ func (s *bookService) CreateBook(req dto.CreateBookRequest, adminID uint) (*dto.
 	return s.toBookResponse(&repository.BookWithUserNames{Book: *savedBook}), nil
 }
 
-func (s *bookService) GetBooks(filter dto.BookFilter) (*dto.BookListResponse, error) {
-	logrus.Info("GetBooks@Service Started")
+func (s *bookService) GetBooksList(filter dto.BookFilter) ([]dto.BookResponse, int64, int64, error) {
+	logrus.Info("GetBooksList@Service Started")
 
 	if filter.Limit <= 0 {
 		filter.Limit = 10
@@ -93,8 +93,8 @@ func (s *bookService) GetBooks(filter dto.BookFilter) (*dto.BookListResponse, er
 
 	books, totalCount, filteredCount, err := s.bookRepo.GetBookList(filter)
 	if err != nil {
-		logrus.Errorf("GetBooks@Service GetBookList Error: %v", err)
-		return nil, err
+		logrus.Errorf("GetBooksList@Service GetBookList Error: %v", err)
+		return nil, 0, 0, err
 	}
 
 	bookResponses := make([]dto.BookResponse, 0, len(books))
@@ -102,12 +102,8 @@ func (s *bookService) GetBooks(filter dto.BookFilter) (*dto.BookListResponse, er
 		bookResponses = append(bookResponses, *s.toBookResponse(&book))
 	}
 
-	logrus.Infof("GetBooks@Service Completed successfully, TotalCount: %d, FilteredCount: %d", totalCount, filteredCount)
-	return &dto.BookListResponse{
-		TotalCount:    totalCount,
-		FilteredCount: filteredCount,
-		Data:          bookResponses,
-	}, nil
+	logrus.Infof("GetBooksList@Service Completed successfully, TotalCount: %d, FilteredCount: %d", totalCount, filteredCount)
+	return bookResponses, totalCount, filteredCount, nil
 }
 
 func (s *bookService) GetBookByUUID(uuid string) (*dto.BookResponse, error) {
