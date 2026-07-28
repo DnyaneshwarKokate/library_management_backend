@@ -27,6 +27,7 @@ var (
 type BorrowService interface {
 	BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto.BorrowRecordResponse, error)
 	ReturnBook(recordUUID string, userID uint) (*dto.BorrowRecordResponse, error)
+	GetMyBorrowings(filter dto.BorrowHistoryFilter) ([]dto.BorrowRecordResponse, int64, int64, error)
 }
 
 type borrowService struct {
@@ -226,6 +227,31 @@ func (s *borrowService) ReturnBook(recordUUID string, userID uint) (*dto.BorrowR
 	recordWithNames.ReturnedAt = &now
 	logrus.Infof("ReturnBook@Service Completed successfully for Record ID: %d", recordWithNames.ID)
 	return s.toBorrowResponse(recordWithNames), nil
+}
+
+func (s *borrowService) GetMyBorrowings(filter dto.BorrowHistoryFilter) ([]dto.BorrowRecordResponse, int64, int64, error) {
+	logrus.Info("GetMyBorrowings@Service Started")
+
+	if filter.Limit <= 0 {
+		filter.Limit = 10
+	}
+	if filter.Offset < 0 {
+		filter.Offset = 0
+	}
+
+	records, totalCount, filteredCount, err := s.borrowRepo.GetBorrowHistory(filter)
+	if err != nil {
+		logrus.Errorf("GetMyBorrowings@Service GetBorrowHistory Error: %v", err)
+		return nil, 0, 0, err
+	}
+
+	responses := make([]dto.BorrowRecordResponse, 0, len(records))
+	for _, rec := range records {
+		responses = append(responses, *s.toBorrowResponse(&rec))
+	}
+
+	logrus.Infof("GetMyBorrowings@Service Completed successfully, TotalCount: %d, FilteredCount: %d", totalCount, filteredCount)
+	return responses, totalCount, filteredCount, nil
 }
 
 func (s *borrowService) toBorrowResponse(item *repository.BorrowRecordWithNames) *dto.BorrowRecordResponse {

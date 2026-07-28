@@ -6,6 +6,7 @@ import (
 
 	"library-management-backend/constants"
 	"library-management-backend/database"
+	"library-management-backend/dto"
 	"library-management-backend/model"
 
 	"github.com/sirupsen/logrus"
@@ -28,6 +29,7 @@ type BorrowRepository interface {
 	IncrementAvailableCopiesWithtx(tx *gorm.DB, bookID uint) error
 	UpdateBorrowRecordStatusWithtx(tx *gorm.DB, recordID uint, status constants.BorrowStatus, returnedAt time.Time) error
 	GetBorrowRecordByUUID(uuid string) (*BorrowRecordWithNames, error)
+	GetBorrowHistory(filter dto.BorrowHistoryFilter) ([]BorrowRecordWithNames, int64, int64, error)
 }
 
 type borrowRepository struct {
@@ -154,4 +156,64 @@ func (r *borrowRepository) GetBorrowRecordByUUID(uuid string) (*BorrowRecordWith
 		return nil, nil
 	}
 	return &res, nil
+}
+
+func (r *borrowRepository) GetBorrowHistory(filter dto.BorrowHistoryFilter) ([]BorrowRecordWithNames, int64, int64, error) {
+	var records []BorrowRecordWithNames
+	var totalCount int64
+	var filteredCount int64
+
+	baseQuery := r.getDB().Table("borrow_records").
+		Where("borrow_records.user_id = ? AND borrow_records.deleted_at IS NULL", filter.UserID)
+
+	if err := baseQuery.Count(&totalCount).Error; err != nil {
+		logrus.Error("GetBorrowHistory totalCount DB Error: ", err)
+		return nil, 0, 0, err
+	}
+
+	query := r.getDB().Table("borrow_records").
+		Where("borrow_records.user_id = ? AND borrow_records.deleted_at IS NULL", filter.UserID)
+
+	if filter.Status != "" {
+		query = query.Where("borrow_records.status = ?", filter.Status)
+	}
+
+	if filter.FromDate != "" {
+		query = query.Where("borrow_records.borrow_date >= ?", filter.FromDate)
+	}
+
+	if filter.ToDate != "" {
+		query = query.Where("borrow_records.borrow_date <= ?", filter.ToDate)
+	}
+
+	if err := query.Count(&filteredCount).Error; err != nil {
+		logrus.Error("GetBorrowHistory filteredCount DB Error: ", err)
+		return nil, 0, 0, err
+	}
+
+	limit := filter.Limit
+	if limit <= 0 {
+		limit = 10
+	}
+
+	offset := filter.Offset
+	if offset < 0 {
+		offset = 0
+	}
+
+	err := query.
+		Select("borrow_records.*, u.name as user_name, u.uuid as user_uuid, b.title as book_title, b.uuid as book_uuid").
+		Joins("LEFT JOIN users u ON borrow_records.user_id = u.id").
+		Joins("LEFT JOIN books b ON borrow_records.book_id = b.id").
+		Order("borrow_records.id desc").
+		Limit(limit).
+		Offset(offset).
+		Scan(&records).Error
+
+	if err != nil {
+		logrus.Error("GetBorrowHistory scan DB Error: ", err)
+		return nil, 0, 0, err
+	}
+
+	return records, totalCount, filteredCount, nil
 }

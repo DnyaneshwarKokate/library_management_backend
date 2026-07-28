@@ -2,6 +2,7 @@ package route
 
 import (
 	"os"
+	"time"
 
 	"library-management-backend/app"
 	"library-management-backend/constants"
@@ -13,6 +14,8 @@ import (
 
 func SetupRouter(ctl *app.ConsentRequestController) *gin.Engine {
 	router := gin.Default()
+
+	router.Use(middleware.TimeoutMiddleware(10 * time.Second))
 
 	router.Use(cors.New(cors.Config{
 		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT", "PATCH"},
@@ -36,14 +39,12 @@ func SetupRouter(ctl *app.ConsentRequestController) *gin.Engine {
 		})
 	})
 
-	// User Routes
 	usersGroup := router.Group("/user")
 	{
 		usersGroup.POST("/register", ctl.AuthController.Register)
 		usersGroup.POST("/login", ctl.AuthController.Login)
 	}
 
-	// Books Routes
 	booksGroup := router.Group("/books")
 	{
 		booksGroup.POST("/list", ctl.BookController.GetBooksList)
@@ -53,19 +54,20 @@ func SetupRouter(ctl *app.ConsentRequestController) *gin.Engine {
 		booksGroup.POST("/delete", middleware.AuthMiddleware(jwtSecret), middleware.RequireRole(constants.RoleAdmin), ctl.BookController.DeleteBook)
 	}
 
-	// Borrow Routes
 	borrowGroup := router.Group("/borrow", middleware.AuthMiddleware(jwtSecret))
 	{
 		borrowGroup.POST("/create", ctl.BorrowController.BorrowBook)
 		borrowGroup.POST("/return", ctl.BorrowController.ReturnBook)
 		borrowGroup.POST("/return/:id", ctl.BorrowController.ReturnBook)
+		borrowGroup.POST("/my-borrowings", ctl.BorrowController.GetMyBorrowings)
 	}
 
-	// Borrow Records Routes
 	borrowRecordsGroup := router.Group("/borrow-records", middleware.AuthMiddleware(jwtSecret))
 	{
 		borrowRecordsGroup.POST("/:id/return", ctl.BorrowController.ReturnBook)
 	}
+
+	router.POST("/my-borrowings", middleware.AuthMiddleware(jwtSecret), ctl.BorrowController.GetMyBorrowings)
 
 	return router
 }

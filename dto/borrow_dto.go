@@ -14,6 +14,15 @@ type ReturnBookRequest struct {
 	BorrowRecordUUID string `json:"borrow_record_uuid,omitempty"`
 }
 
+type BorrowHistoryFilter struct {
+	UserID   uint   `json:"user_id,omitempty"`
+	Status   string `json:"status,omitempty"`
+	FromDate string `json:"from_date,omitempty"`
+	ToDate   string `json:"to_date,omitempty"`
+	Limit    int    `json:"limit,omitempty"`
+	Offset   int    `json:"offset,omitempty"`
+}
+
 type BorrowRecordResponse struct {
 	ID         uint                   `json:"id"`
 	UUID       string                 `json:"uuid"`

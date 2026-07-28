@@ -17,6 +17,7 @@ import (
 type BorrowController interface {
 	BorrowBook(c *gin.Context)
 	ReturnBook(c *gin.Context)
+	GetMyBorrowings(c *gin.Context)
 }
 
 type borrowController struct {
@@ -139,4 +140,56 @@ func (ctl *borrowController) ReturnBook(c *gin.Context) {
 	}
 
 	utils.SuccessResponse(c, "Book returned successfully", res)
+}
+
+func (ctl *borrowController) GetMyBorrowings(c *gin.Context) {
+	defer func() {
+		if panicInfo := recover(); panicInfo != nil {
+			logrus.Error("GetMyBorrowings@panic:", panicInfo)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", panicInfo))
+		}
+	}()
+
+	UserId := c.GetHeader("auth_user_id")
+	if UserId == "" {
+		utils.UnauthorizedResponse(c, "Authorization failed: User ID is missing")
+		return
+	}
+	userIDInt, err := strconv.Atoi(UserId)
+	if err != nil {
+		logrus.Error("Error converting user ID:", err)
+		utils.ValidationResponse(c, "Invalid user ID")
+		return
+	}
+
+	var req dto.BorrowHistoryFilter
+	if c.Request.Body != nil && c.Request.ContentLength > 0 {
+		if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
+			logrus.Error("Invalid request body:", err)
+			utils.ValidationResponse(c, "Invalid request data")
+			return
+		}
+	} else {
+		_ = c.ShouldBindQuery(&req)
+	}
+
+	req.UserID = uint(userIDInt)
+
+	if validationResp := utils.ValidateRequest(c, req); validationResp != nil {
+		utils.ValidationResponse(c, validationResp.(string))
+		return
+	}
+
+	response, total, filtered, err := ctl.borrowService.GetMyBorrowings(req)
+	if err != nil {
+		logrus.Error("GetMyBorrowings@Error:", err)
+		utils.InternalServerErrorResponse(c, err)
+		return
+	}
+
+	utils.SuccessResponse(c, "Borrowing history fetched successfully", map[string]interface{}{
+		"data":         response,
+		"filter_count": filtered,
+		"total_count":  total,
+	})
 }
