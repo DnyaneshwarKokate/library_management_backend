@@ -10,6 +10,7 @@ import (
 	"library-management-backend/model"
 	"library-management-backend/repository"
 	"library-management-backend/utils"
+	"library-management-backend/workers"
 
 	"github.com/sirupsen/logrus"
 )
@@ -28,6 +29,7 @@ type BorrowService interface {
 	BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto.BorrowRecordResponse, error)
 	ReturnBook(recordUUID string, userID uint) (*dto.BorrowRecordResponse, error)
 	GetMyBorrowings(filter dto.BorrowHistoryFilter) ([]dto.BorrowRecordResponse, int64, int64, error)
+	ProcessOverdue() (*dto.ProcessOverdueResponse, error)
 }
 
 type borrowService struct {
@@ -99,7 +101,7 @@ func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto
 		return nil, ErrBorrowLimitExceeded
 	}
 
-	// 5. Execute ACID Transaction
+	// 5. Execute ACID Transaction with Pessimistic Locking (FOR UPDATE)
 	tx := database.LibraryManagementDB.Begin()
 	if tx.Error != nil {
 		logrus.Errorf("BorrowBook@Service transaction begin error: %v", tx.Error)
@@ -111,6 +113,23 @@ func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto
 			logrus.Errorf("BorrowBook@Service panic recovered, transaction rolled back: %v", r)
 		}
 	}()
+
+	// Lock book row FOR UPDATE to prevent race conditions during concurrent borrowing
+	lockedBook, err := s.borrowRepo.GetBookForUpdateWithtx(tx, bookWithNames.ID)
+	if err != nil {
+		tx.Rollback()
+		logrus.Errorf("BorrowBook@Service GetBookForUpdate Error: %v", err)
+		return nil, err
+	}
+	if lockedBook == nil {
+		tx.Rollback()
+		return nil, ErrBookNotFound
+	}
+	if lockedBook.AvailableCopies <= 0 {
+		tx.Rollback()
+		logrus.Warnf("BorrowBook@Service Book Out of Stock inside Lock Book ID: %d", bookWithNames.ID)
+		return nil, ErrBookOutOfStock
+	}
 
 	if err := s.borrowRepo.DecrementAvailableCopiesWithtx(tx, bookWithNames.ID); err != nil {
 		tx.Rollback()
@@ -252,6 +271,21 @@ func (s *borrowService) GetMyBorrowings(filter dto.BorrowHistoryFilter) ([]dto.B
 
 	logrus.Infof("GetMyBorrowings@Service Completed successfully, TotalCount: %d, FilteredCount: %d", totalCount, filteredCount)
 	return responses, totalCount, filteredCount, nil
+}
+
+func (s *borrowService) ProcessOverdue() (*dto.ProcessOverdueResponse, error) {
+	logrus.Info("ProcessOverdue@Service Started")
+
+	records, err := s.borrowRepo.GetOverdueRecords()
+	if err != nil {
+		logrus.Errorf("ProcessOverdue@Service GetOverdueRecords Error: %v", err)
+		return nil, err
+	}
+
+	res := workers.ProcessOverdueWorkerPool(records, s.borrowRepo.MarkRecordAsOverdue)
+
+	logrus.Infof("ProcessOverdue@Service Completed successfully: %+v", res)
+	return res, nil
 }
 
 func (s *borrowService) toBorrowResponse(item *repository.BorrowRecordWithNames) *dto.BorrowRecordResponse {

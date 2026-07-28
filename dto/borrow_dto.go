@@ -23,6 +23,12 @@ type BorrowHistoryFilter struct {
 	Offset   int    `json:"offset,omitempty"`
 }
 
+type ProcessOverdueResponse struct {
+	TotalOverdueFound int64 `json:"total_overdue_found"`
+	ProcessedCount    int64 `json:"processed_count"`
+	FailedCount       int64 `json:"failed_count"`
+}
+
 type BorrowRecordResponse struct {
 	ID         uint                   `json:"id"`
 	UUID       string                 `json:"uuid"`

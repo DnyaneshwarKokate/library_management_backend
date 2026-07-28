@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type BorrowRecordWithNames struct {
@@ -25,11 +27,14 @@ type BorrowRepository interface {
 	StoreBorrowRecordWithtx(tx *gorm.DB, record *model.BorrowRecord) (*model.BorrowRecord, error)
 	CountActiveBorrowsByUser(userID uint) (int64, error)
 	HasActiveBorrowForBook(userID uint, bookID uint) (bool, error)
+	GetBookForUpdateWithtx(tx *gorm.DB, bookID uint) (*model.Book, error)
 	DecrementAvailableCopiesWithtx(tx *gorm.DB, bookID uint) error
 	IncrementAvailableCopiesWithtx(tx *gorm.DB, bookID uint) error
 	UpdateBorrowRecordStatusWithtx(tx *gorm.DB, recordID uint, status constants.BorrowStatus, returnedAt time.Time) error
 	GetBorrowRecordByUUID(uuid string) (*BorrowRecordWithNames, error)
 	GetBorrowHistory(filter dto.BorrowHistoryFilter) ([]BorrowRecordWithNames, int64, int64, error)
+	GetOverdueRecords() ([]model.BorrowRecord, error)
+	MarkRecordAsOverdue(recordID uint) error
 }
 
 type borrowRepository struct {
@@ -81,6 +86,24 @@ func (r *borrowRepository) HasActiveBorrowForBook(userID uint, bookID uint) (boo
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func (r *borrowRepository) GetBookForUpdateWithtx(tx *gorm.DB, bookID uint) (*model.Book, error) {
+	if tx == nil {
+		tx = r.getDB()
+	}
+	var book model.Book
+	err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ? AND deleted_at IS NULL", bookID).
+		First(&book).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		logrus.Error("GetBookForUpdateWithtx DB Error: ", err)
+		return nil, err
+	}
+	return &book, nil
 }
 
 func (r *borrowRepository) DecrementAvailableCopiesWithtx(tx *gorm.DB, bookID uint) error {
@@ -216,4 +239,28 @@ func (r *borrowRepository) GetBorrowHistory(filter dto.BorrowHistoryFilter) ([]B
 	}
 
 	return records, totalCount, filteredCount, nil
+}
+
+func (r *borrowRepository) GetOverdueRecords() ([]model.BorrowRecord, error) {
+	var records []model.BorrowRecord
+	now := time.Now()
+	err := r.getDB().Model(&model.BorrowRecord{}).
+		Where("status = ? AND due_date < ? AND deleted_at IS NULL", constants.StatusBorrowed, now).
+		Find(&records).Error
+	if err != nil {
+		logrus.Error("GetOverdueRecords DB Error: ", err)
+		return nil, err
+	}
+	return records, nil
+}
+
+func (r *borrowRepository) MarkRecordAsOverdue(recordID uint) error {
+	result := r.getDB().Model(&model.BorrowRecord{}).
+		Where("id = ? AND deleted_at IS NULL", recordID).
+		Update("status", constants.StatusOverdue)
+	if result.Error != nil {
+		logrus.Error("MarkRecordAsOverdue DB Error: ", result.Error)
+		return result.Error
+	}
+	return nil
 }

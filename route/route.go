@@ -72,7 +72,7 @@ func SetupRouter(ctl *app.ConsentRequestController) *gin.Engine {
 	adminGroup := router.Group("/admin", middleware.AuthMiddleware(jwtSecret), middleware.RequireRole(constants.RoleAdmin))
 	{
 		adminGroup.POST("/dashboard", ctl.DashboardController.GetDashboardStats)
-		adminGroup.GET("/dashboard", ctl.DashboardController.GetDashboardStats)
+		adminGroup.POST("/process-overdue", ctl.BorrowController.ProcessOverdue)
 	}
 
 	return router

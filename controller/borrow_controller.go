@@ -18,6 +18,7 @@ type BorrowController interface {
 	BorrowBook(c *gin.Context)
 	ReturnBook(c *gin.Context)
 	GetMyBorrowings(c *gin.Context)
+	ProcessOverdue(c *gin.Context)
 }
 
 type borrowController struct {
@@ -192,4 +193,28 @@ func (ctl *borrowController) GetMyBorrowings(c *gin.Context) {
 		"filter_count": filtered,
 		"total_count":  total,
 	})
+}
+
+func (ctl *borrowController) ProcessOverdue(c *gin.Context) {
+	defer func() {
+		if panicInfo := recover(); panicInfo != nil {
+			logrus.Errorf("ProcessOverdue@Controller panic: %v", panicInfo)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", panicInfo))
+		}
+	}()
+
+	UserId := c.GetHeader("auth_user_id")
+	if UserId == "" {
+		utils.UnauthorizedResponse(c, "Authorization failed: User ID is missing")
+		return
+	}
+
+	res, err := ctl.borrowService.ProcessOverdue()
+	if err != nil {
+		logrus.Error("ProcessOverdue@Error:", err)
+		utils.InternalServerErrorResponse(c, err)
+		return
+	}
+
+	utils.SuccessResponse(c, "Overdue records processed successfully", res)
 }
