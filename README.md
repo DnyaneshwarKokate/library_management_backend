@@ -38,7 +38,7 @@ library_management_backend/
   - `User`: `id`, `uuid`, `name`, `email` (unique constraint), `password`, `role` (`ADMIN`, `MEMBER`), `status`.
   - `Book`: `id`, `uuid`, `title`, `author`, `isbn` (unique constraint), `category`, `total_copies`, `available_copies`.
   - `BorrowRecord`: `id`, `uuid`, `user_id`, `book_id`, `borrow_date`, `due_date`, `returned_at`, `status` (`BORROWED`, `RETURNED`, `OVERDUE`).
-- Set up auto-migration, GORM soft deletes (`gorm.DeletedAt`), foreign keys, and timestamps (`created_at`, `updated_at`).
+- Defined database table structures, GORM soft deletes (`gorm.DeletedAt`), foreign key relationships, unique constraints (email, ISBN), and timestamps (`created_at`, `updated_at`).
 
 ### 🔹 Phase 3 — Authentication & Authorization
 - **User Registration** (`POST /user/register`): Validates name, email, and password strength (min 6 chars, uppercase, lowercase, number, special char). Hashes passwords using bcrypt.
