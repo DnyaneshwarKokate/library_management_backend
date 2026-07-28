@@ -63,6 +63,187 @@ sequenceDiagram
 
 ---
 
+## 🛠️ Phase-Wise Implementation Roadmap
+
+### 🔹 Phase 1 — Project Setup
+- [x] Create a new Go project module (`go.mod`).
+- [x] Configure **Gin Web Framework** router engine.
+- [x] Configure **GORM ORM** and MySQL driver initialization.
+- [x] Establish `.env` environment configuration management using `godotenv`.
+- [x] Create modular layered project structure:
+  - `app`: Dependency Injection Container & Initializer.
+  - `config`: Environment loader & DB connections.
+  - `constants`: Roles (`ADMIN`, `MEMBER`) & Borrow Statuses (`BORROWED`, `RETURNED`, `OVERDUE`).
+  - `controller`: HTTP Request Handlers & Input Binding.
+  - `database`: GORM MySQL Connection Setup & Auto-Migration.
+  - `dto`: Data Transfer Objects (Request/Response structs).
+  - `middleware`: JWT Authentication, RBAC, and 10s Request Timeout.
+  - `model`: Database Entities (`User`, `Book`, `BorrowRecord`).
+  - `repository`: Data Access Layer & GORM Queries.
+  - `route`: Gin Router Setup & Route Group Registration.
+  - `service`: Business Logic Layer & ACID Transactions.
+  - `utils`: JWT utilities, Password Hashing, Validation & Structured Logging.
+  - `workers`: Goroutine Worker Pool for Overdue Records Batch Processing.
+- [x] Add application configuration parsing.
+- [x] Add database connection handling and auto-migration.
+
+---
+
+### 🔹 Phase 2 — Database & Models
+- [x] **Create `users` table/model**:
+  - Fields: `id`, `uuid`, `name`, `email` (unique constraint), `password`, `role` (`ADMIN`, `MEMBER`), `status`, `created_at`, `updated_at`, `deleted_at`.
+- [x] **Create `books` table/model**:
+  - Fields: `id`, `uuid`, `title`, `author`, `isbn` (unique constraint), `category`, `total_copies`, `available_copies`, `created_at`, `updated_at`, `deleted_at`.
+- [x] **Create `borrow_records` table/model**:
+  - Fields: `id`, `uuid`, `user_id`, `book_id`, `borrow_date`, `due_date`, `returned_at`, `status` (`BORROWED`, `RETURNED`, `OVERDUE`), `created_at`, `updated_at`, `deleted_at`.
+- [x] **Define Model Relationships**:
+  - User → Borrow Records (`1:N` foreign key relationship `user_id`).
+  - Book → Borrow Records (`1:N` foreign key relationship `book_id`).
+- [x] Add appropriate Primary Keys (`id`, `uuid`) and Foreign Keys.
+- [x] Add unique constraint for user `email`.
+- [x] Add unique constraint for book `isbn`.
+- [x] Include automatic GORM timestamps (`created_at`, `updated_at`, `deleted_at`).
+
+---
+
+### 🔹 Phase 3 — Authentication & Authorization
+- [x] **User Registration API** (`POST /user/register`):
+  - Validate `name` presence.
+  - Validate `email` format.
+  - Validate `password` complexity (min 6 chars, uppercase, lowercase, number, special char).
+  - Check and reject duplicate email registrations.
+  - Hash password using `bcrypt` before database storage.
+- [x] **User Login API** (`POST /user/login`):
+  - Validate email and password inputs.
+  - Verify password hash matching.
+  - Generate signed JWT token containing `user_id`, `user_uuid`, and `role`.
+- [x] **JWT Authentication Middleware** (`middleware.AuthMiddleware`):
+  - Parse and validate Bearer JWT token from `Authorization` header.
+  - Extract user ID, UUID, and role, populating request headers (`auth_user_id`, `user_id`, `user_type`).
+- [x] **Role-Based Access Control Middleware** (`middleware.RequireRole`):
+  - Enforce role permissions restricting specific endpoints to `ADMIN` or `MEMBER`.
+
+---
+
+### 🔹 Phase 4 — Book Management
+- [x] **Create Book** (`POST /books/create` | `/api/v1/books`):
+  - Allow access to `ADMIN` only.
+  - Validate `title`, `author`, `isbn`, `category`, and `total_copies`.
+  - Reject duplicate ISBN entries.
+  - Automatically initialize `available_copies = total_copies`.
+- [x] **Get Books** (`POST /books/list` | `/api/v1/books`):
+  - Implement pagination (`limit`, `offset`).
+  - Implement search filter by `title` and `author`.
+  - Implement filtering by `category`.
+  - Return pagination metadata (`filter_count`, `total_count`).
+- [x] **Get Book** (`POST /books/details` | `/api/v1/books/:id`):
+  - Fetch book details by UUID or ID.
+  - Return proper `404 Not Found` when book does not exist.
+- [x] **Update Book** (`POST /books/update` | `PUT /api/v1/books/:id`):
+  - Allow access to `ADMIN` only.
+  - Validate update request payload.
+  - Recalculate `available_copies` dynamically when `total_copies` is modified.
+- [x] **Delete Book** (`POST /books/delete` | `DELETE /api/v1/books/:id`):
+  - Allow access to `ADMIN` only.
+  - Soft-delete book record (`gorm.DeletedAt`) while preventing deletion if active borrow records exist.
+
+---
+
+### 🔹 Phase 5 — Borrow Book
+- [x] **Borrow Book API** (`POST /borrow/create` | `/api/v1/books/:id/borrow`):
+  - Verify authenticated user token.
+  - Verify target book existence.
+  - Check copy availability (`available_copies > 0`).
+  - Prevent duplicate borrowing of the same book while an active record exists.
+  - Enforce active borrow limit of **maximum 3 books** per user.
+  - Set `due_date` automatically to **14 days** from borrowing date.
+  - Execute GORM ACID database transaction:
+    - Insert new `BorrowRecord` with status `BORROWED`.
+    - Decrement `available_copies` by 1.
+
+---
+
+### 🔹 Phase 6 — Return Book
+- [x] **Return Book API** (`POST /borrow/return` & `/borrow/return/:id` | `/api/v1/borrow-records/:id/return`):
+  - Verify borrow record existence.
+  - Verify logged-in user ownership of the borrowing record.
+  - Prevent returning an already returned book (`status == RETURNED`).
+  - Execute GORM ACID database transaction:
+    - Update status to `RETURNED`.
+    - Record exact timestamp in `returned_at`.
+    - Increment `available_copies` by 1.
+
+---
+
+### 🔹 Phase 7 — My Borrowing History
+- [x] **Borrow History API** (`POST /borrow/my-borrowings` | `/api/v1/my-borrowings`):
+  - Retrieve borrowing history exclusively for the logged-in user using `auth_user_id`.
+  - Support pagination (`limit`, `offset`).
+  - Support status filter (`BORROWED`, `RETURNED`, `OVERDUE`).
+  - Support date range filtering (`from_date`, `to_date`).
+  - Return associated book metadata embedded alongside borrowing details.
+
+---
+
+### 🔹 Phase 8 — Admin Dashboard
+- [x] **Admin Analytics API** (`POST /admin/dashboard` | `/api/v1/admin/dashboard`):
+  - Restricted to `ADMIN` role.
+  - Returns real-time aggregate metrics:
+    - `total_books`: Total non-deleted books.
+    - `total_users`: Total registered users.
+    - `total_available_books`: Sum of all available copies across catalog.
+    - `active_borrowings`: Count of books currently in `BORROWED` status.
+    - `overdue_books`: Count of overdue borrowings (`due_date < NOW()`).
+    - `completed_borrowings`: Total count of returned records (`RETURNED`).
+
+---
+
+### 🔹 Phase 9 — Concurrency & Locking
+- [x] **Concurrent Borrowing Control**:
+  - Handles multi-user simultaneous checkout attempts for popular titles.
+  - Employs **MySQL Pessimistic Row Locking** (`SELECT ... FOR UPDATE` via `clause.Locking{Strength: "UPDATE"}`).
+  - Guarantees that when `available_copies = 1`, exactly **1 user succeeds** while concurrent attempts fail gracefully with `400 Bad Request`.
+  - Prevents race conditions and guarantees `available_copies` **never becomes negative**.
+
+```text
+Example Concurrency Execution (Available copies = 1):
+
+   User A → Borrow  ──►  [Lock Row & Decrement (1 -> 0)]  ──►  ✅ Success (200 OK)
+   User B → Borrow  ──►  [Wait for Lock -> Copies = 0]    ──►  ❌ Failed (400 Bad Request)
+   User C → Borrow  ──►  [Wait for Lock -> Copies = 0]    ──►  ❌ Failed (400 Bad Request)
+```
+
+---
+
+### 🔹 Phase 10 — Worker Pool Batch Processing
+- [x] **Batch Overdue Worker** (`POST /admin/process-overdue` | `/api/v1/admin/process-overdue`):
+  - Queries active borrow records where `due_date < NOW()` and `status = 'BORROWED'`.
+  - Processes batch updates asynchronously using a **Worker Pool pattern**:
+    - Spawns a **maximum of 5 concurrent worker goroutines**.
+    - Uses Go **channels** (`chan model.BorrowRecord`) for job queue distribution.
+    - Coordinates execution using `sync.WaitGroup`.
+    - Tracks progress using thread-safe `sync/atomic` counters (`processed_count`, `failed_count`).
+    - Ensures zero data races during record updates.
+
+```text
+Batch Execution Architecture:
+
+  1000 Overdue Records  ──►  Job Queue Channel (chan model.BorrowRecord)
+                                       │
+            ┌──────────────┬───────────┼───────────┬──────────────┐
+            ▼              ▼           ▼           ▼              ▼
+        Worker 1       Worker 2    Worker 3    Worker 4       Worker 5
+            │              │           │           │              │
+            └──────────────┴───────────┼───────────┴──────────────┘
+                                       ▼
+                   Atomic Counters & WaitGroup Sync
+                                       │
+                                       ▼
+                  HTTP JSON Summary Response to Admin
+```
+
+---
+
 ## 📁 Project Directory Structure
 
 ```text
