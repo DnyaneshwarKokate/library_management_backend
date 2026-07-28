@@ -37,12 +37,11 @@ func (r *userRepository) StoreUserWithtx(tx *gorm.DB, userDetails *model.User) (
 	if tx == nil {
 		tx = r.getDB()
 	}
-	result := tx.Create(userDetails)
-	if result.Error != nil {
-		logrus.Errorf("Error creating userDetails : %v", result.Error)
-		return nil, result.Error
+	if err := tx.Create(userDetails).Error; err != nil {
+		logrus.Error("StoreUserWithtx DB Error: ", err)
+		return nil, err
 	}
-	logrus.Infof("userDetails created successfully: %+v", userDetails)
+	logrus.Infof("StoreUserWithtx success, UserID: %d", userDetails.ID)
 	return userDetails, nil
 }
 
@@ -53,6 +52,7 @@ func (r *userRepository) FindByEmail(email string) (*model.User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
+		logrus.Error("FindByEmail DB Error: ", err)
 		return nil, err
 	}
 	return &user, nil
@@ -65,6 +65,7 @@ func (r *userRepository) FindByUUID(uuid string) (*model.User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
+		logrus.Error("FindByUUID DB Error: ", err)
 		return nil, err
 	}
 	return &user, nil
@@ -77,6 +78,7 @@ func (r *userRepository) FindByID(id uint) (*model.User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
+		logrus.Error("FindByID DB Error: ", err)
 		return nil, err
 	}
 	return &user, nil
@@ -86,6 +88,7 @@ func (r *userRepository) ExistsByEmail(email string) (bool, error) {
 	var count int64
 	err := r.getDB().Model(&model.User{}).Where("email = ? AND deleted_at IS NULL", email).Count(&count).Error
 	if err != nil {
+		logrus.Error("ExistsByEmail DB Error: ", err)
 		return false, err
 	}
 	return count > 0, nil

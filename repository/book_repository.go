@@ -47,12 +47,11 @@ func (r *bookRepository) StoreBookWithtx(tx *gorm.DB, book *model.Book) (*model.
 	if tx == nil {
 		tx = r.getDB()
 	}
-	result := tx.Create(book)
-	if result.Error != nil {
-		logrus.Errorf("Error creating book: %v", result.Error)
-		return nil, result.Error
+	if err := tx.Create(book).Error; err != nil {
+		logrus.Error("StoreBookWithtx DB Error: ", err)
+		return nil, err
 	}
-	logrus.Infof("Book created successfully: %+v", book)
+	logrus.Infof("StoreBookWithtx success, BookID: %d", book.ID)
 	return book, nil
 }
 
@@ -65,6 +64,7 @@ func (r *bookRepository) GetBookByUUID(uuid string) (*BookWithUserNames, error) 
 		Where("books.uuid = ? AND books.deleted_at IS NULL", uuid).
 		Scan(&res).Error
 	if err != nil {
+		logrus.Error("GetBookByUUID DB Error: ", err)
 		return nil, err
 	}
 	if res.ID == 0 {
@@ -77,6 +77,7 @@ func (r *bookRepository) ExistsByISBN(isbn string) (bool, error) {
 	var count int64
 	err := r.getDB().Model(&model.Book{}).Where("isbn = ? AND deleted_at IS NULL", isbn).Count(&count).Error
 	if err != nil {
+		logrus.Error("ExistsByISBN DB Error: ", err)
 		return false, err
 	}
 	return count > 0, nil
@@ -87,8 +88,8 @@ func (r *bookRepository) GetBookList(filter dto.BookFilter) ([]BookWithUserNames
 	var totalCount int64
 	var filteredCount int64
 
-	// Total count of all non-deleted books
 	if err := r.getDB().Table("books").Where("deleted_at IS NULL").Count(&totalCount).Error; err != nil {
+		logrus.Error("GetBookList totalCount DB Error: ", err)
 		return nil, 0, 0, err
 	}
 
@@ -104,6 +105,7 @@ func (r *bookRepository) GetBookList(filter dto.BookFilter) ([]BookWithUserNames
 	}
 
 	if err := query.Count(&filteredCount).Error; err != nil {
+		logrus.Error("GetBookList filteredCount DB Error: ", err)
 		return nil, 0, 0, err
 	}
 
@@ -126,6 +128,7 @@ func (r *bookRepository) GetBookList(filter dto.BookFilter) ([]BookWithUserNames
 		Offset(offset).
 		Scan(&books).Error
 	if err != nil {
+		logrus.Error("GetBookList scan DB Error: ", err)
 		return nil, 0, 0, err
 	}
 
@@ -136,12 +139,11 @@ func (r *bookRepository) UpdateBookWithtx(tx *gorm.DB, book *model.Book) (*model
 	if tx == nil {
 		tx = r.getDB()
 	}
-	result := tx.Save(book)
-	if result.Error != nil {
-		logrus.Errorf("Error updating book: %v", result.Error)
-		return nil, result.Error
+	if err := tx.Save(book).Error; err != nil {
+		logrus.Error("UpdateBookWithtx DB Error: ", err)
+		return nil, err
 	}
-	logrus.Infof("Book updated successfully: %+v", book)
+	logrus.Infof("UpdateBookWithtx success, BookID: %d", book.ID)
 	return book, nil
 }
 
@@ -149,7 +151,7 @@ func (r *bookRepository) DeleteBookByUUID(uuid string) error {
 	now := time.Now()
 	result := r.getDB().Model(&model.Book{}).Where("uuid = ? AND deleted_at IS NULL", uuid).Update("deleted_at", now)
 	if result.Error != nil {
-		logrus.Errorf("Error deleting book by UUID: %v", result.Error)
+		logrus.Error("DeleteBookByUUID DB Error: ", result.Error)
 		return result.Error
 	}
 	return nil
@@ -161,6 +163,7 @@ func (r *bookRepository) HasActiveBorrowRecords(bookID uint) (bool, error) {
 		Where("book_id = ? AND status IN (?, ?) AND deleted_at IS NULL", bookID, constants.StatusBorrowed, constants.StatusOverdue).
 		Count(&count).Error
 	if err != nil {
+		logrus.Error("HasActiveBorrowRecords DB Error: ", err)
 		return false, err
 	}
 	return count > 0, nil

@@ -57,6 +57,14 @@ func SetupRouter(ctl *app.ConsentRequestController) *gin.Engine {
 	borrowGroup := router.Group("/borrow", middleware.AuthMiddleware(jwtSecret))
 	{
 		borrowGroup.POST("/create", ctl.BorrowController.BorrowBook)
+		borrowGroup.POST("/return", ctl.BorrowController.ReturnBook)
+		borrowGroup.POST("/return/:id", ctl.BorrowController.ReturnBook)
+	}
+
+	// Borrow Records Routes
+	borrowRecordsGroup := router.Group("/borrow-records", middleware.AuthMiddleware(jwtSecret))
+	{
+		borrowRecordsGroup.POST("/:id/return", ctl.BorrowController.ReturnBook)
 	}
 
 	return router

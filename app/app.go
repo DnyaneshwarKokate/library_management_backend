@@ -11,9 +11,9 @@ type App struct {
 }
 
 type ConsentRequestController struct {
-	AuthController   *controller.AuthController
-	BookController   *controller.BookController
-	BorrowController *controller.BorrowController
+	AuthController   controller.AuthController
+	BookController   controller.BookController
+	BorrowController controller.BorrowController
 }
 
 type Services struct {

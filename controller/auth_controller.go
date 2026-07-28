@@ -13,27 +13,32 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type AuthController struct {
+type AuthController interface {
+	Register(c *gin.Context)
+	Login(c *gin.Context)
+}
+
+type authController struct {
 	authService service.AuthService
 }
 
-func NewAuthController(authService service.AuthService) *AuthController {
-	return &AuthController{
+func NewAuthController(authService service.AuthService) AuthController {
+	return &authController{
 		authService: authService,
 	}
 }
 
-func (ctrl *AuthController) Register(c *gin.Context) {
+func (ctl *authController) Register(c *gin.Context) {
 	defer func() {
-		if r := recover(); r != nil {
-			logrus.Error("Recovered in Register: ", r)
-			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", r))
+		if panicInfo := recover(); panicInfo != nil {
+			logrus.Errorf("Register@Controller panic: %v", panicInfo)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", panicInfo))
 		}
 	}()
 
 	var req dto.RegisterRequest
 	if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
-		logrus.Errorf("[RegisterController] Invalid payload | error=%v", err)
+		logrus.Errorf("Register@Controller Invalid payload: %v", err)
 		utils.ValidationResponse(c, "invalid request data")
 		return
 	}
@@ -43,7 +48,7 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 		return
 	}
 
-	err := ctrl.authService.Register(req)
+	err := ctl.authService.Register(req)
 	if err != nil {
 		if errors.Is(err, service.ErrDuplicateEmail) {
 			utils.ConflictResponse(c, err.Error())
@@ -56,17 +61,17 @@ func (ctrl *AuthController) Register(c *gin.Context) {
 	utils.CreatedResponse(c, "User registered successfully", nil)
 }
 
-func (ctrl *AuthController) Login(c *gin.Context) {
+func (ctl *authController) Login(c *gin.Context) {
 	defer func() {
-		if r := recover(); r != nil {
-			logrus.Error("Recovered in Login: ", r)
-			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", r))
+		if panicInfo := recover(); panicInfo != nil {
+			logrus.Errorf("Login@Controller panic: %v", panicInfo)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", panicInfo))
 		}
 	}()
 
 	var req dto.LoginRequest
 	if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
-		logrus.Errorf("[LoginController] Invalid payload | error=%v", err)
+		logrus.Errorf("Login@Controller Invalid payload: %v", err)
 		utils.ValidationResponse(c, "invalid request data")
 		return
 	}
@@ -76,7 +81,7 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 		return
 	}
 
-	res, err := ctrl.authService.Login(req)
+	res, err := ctl.authService.Login(req)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidCredential) {
 			utils.UnauthorizedResponse(c, err.Error())

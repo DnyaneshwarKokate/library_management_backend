@@ -14,27 +14,48 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type BookController struct {
+type BookController interface {
+	CreateBook(c *gin.Context)
+	GetBooks(c *gin.Context)
+	GetBookByUUID(c *gin.Context)
+	UpdateBook(c *gin.Context)
+	DeleteBook(c *gin.Context)
+}
+
+type bookController struct {
 	bookService service.BookService
 }
 
-func NewBookController(bookService service.BookService) *BookController {
-	return &BookController{
+func NewBookController(bookService service.BookService) BookController {
+	return &bookController{
 		bookService: bookService,
 	}
 }
 
-func (ctrl *BookController) CreateBook(c *gin.Context) {
+func (ctl *bookController) CreateBook(c *gin.Context) {
 	defer func() {
-		if r := recover(); r != nil {
-			logrus.Error("Recovered in CreateBook: ", r)
-			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", r))
+		if panicInfo := recover(); panicInfo != nil {
+			logrus.Errorf("CreateBook@Controller panic: %v", panicInfo)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", panicInfo))
 		}
 	}()
 
+	UserId := c.GetHeader("auth_user_id")
+	if UserId == "" {
+		utils.UnauthorizedResponse(c, "Authorization failed: User ID is missing")
+		return
+	}
+	userIDInt, err := strconv.Atoi(UserId)
+	if err != nil {
+		logrus.Error("Error converting user ID:", err)
+		utils.ValidationResponse(c, "Invalid user ID")
+		return
+	}
+	adminID := uint(userIDInt)
+
 	var req dto.CreateBookRequest
 	if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
-		logrus.Errorf("[CreateBookController] Invalid payload | error=%v", err)
+		logrus.Errorf("CreateBook@Controller Invalid payload: %v", err)
 		utils.ValidationResponse(c, "invalid request data")
 		return
 	}
@@ -44,10 +65,7 @@ func (ctrl *BookController) CreateBook(c *gin.Context) {
 		return
 	}
 
-	userIDStr := c.GetHeader("auth_user_id")
-	id, _ := strconv.ParseUint(userIDStr, 10, 32)
-	adminID := uint(id)
-	res, err := ctrl.bookService.CreateBook(req, adminID)
+	res, err := ctl.bookService.CreateBook(req, adminID)
 	if err != nil {
 		if errors.Is(err, service.ErrDuplicateISBN) {
 			utils.ConflictResponse(c, err.Error())
@@ -60,11 +78,11 @@ func (ctrl *BookController) CreateBook(c *gin.Context) {
 	utils.CreatedResponse(c, "Book created successfully", res)
 }
 
-func (ctrl *BookController) GetBooks(c *gin.Context) {
+func (ctl *bookController) GetBooks(c *gin.Context) {
 	defer func() {
-		if r := recover(); r != nil {
-			logrus.Error("Recovered in GetBooks: ", r)
-			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", r))
+		if panicInfo := recover(); panicInfo != nil {
+			logrus.Errorf("GetBooks@Controller panic: %v", panicInfo)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", panicInfo))
 		}
 	}()
 
@@ -76,7 +94,7 @@ func (ctrl *BookController) GetBooks(c *gin.Context) {
 		_ = c.ShouldBindQuery(&filter)
 	}
 
-	res, err := ctrl.bookService.GetBooks(filter)
+	res, err := ctl.bookService.GetBooks(filter)
 	if err != nil {
 		utils.InternalServerErrorResponse(c, err)
 		return
@@ -85,11 +103,11 @@ func (ctrl *BookController) GetBooks(c *gin.Context) {
 	utils.SuccessResponse(c, "Books fetched successfully", res)
 }
 
-func (ctrl *BookController) GetBookByUUID(c *gin.Context) {
+func (ctl *bookController) GetBookByUUID(c *gin.Context) {
 	defer func() {
-		if r := recover(); r != nil {
-			logrus.Error("Recovered in GetBookByUUID: ", r)
-			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", r))
+		if panicInfo := recover(); panicInfo != nil {
+			logrus.Errorf("GetBookByUUID@Controller panic: %v", panicInfo)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", panicInfo))
 		}
 	}()
 
@@ -109,7 +127,7 @@ func (ctrl *BookController) GetBookByUUID(c *gin.Context) {
 		return
 	}
 
-	res, err := ctrl.bookService.GetBookByUUID(uuid)
+	res, err := ctl.bookService.GetBookByUUID(uuid)
 	if err != nil {
 		if errors.Is(err, service.ErrBookNotFound) {
 			utils.NotFoundResponse(c, err.Error())
@@ -122,18 +140,31 @@ func (ctrl *BookController) GetBookByUUID(c *gin.Context) {
 	utils.SuccessResponse(c, "Book details fetched successfully", res)
 }
 
-func (ctrl *BookController) UpdateBook(c *gin.Context) {
+func (ctl *bookController) UpdateBook(c *gin.Context) {
 	defer func() {
-		if r := recover(); r != nil {
-			logrus.Error("Recovered in UpdateBook: ", r)
-			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", r))
+		if panicInfo := recover(); panicInfo != nil {
+			logrus.Errorf("UpdateBook@Controller panic: %v", panicInfo)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", panicInfo))
 		}
 	}()
+
+	UserId := c.GetHeader("auth_user_id")
+	if UserId == "" {
+		utils.UnauthorizedResponse(c, "Authorization failed: User ID is missing")
+		return
+	}
+	userIDInt, err := strconv.Atoi(UserId)
+	if err != nil {
+		logrus.Error("Error converting user ID:", err)
+		utils.ValidationResponse(c, "Invalid user ID")
+		return
+	}
+	adminID := uint(userIDInt)
 
 	uuid := c.Param("uuid")
 	var req dto.UpdateBookRequest
 	if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
-		logrus.Errorf("[UpdateBookController] Invalid payload | error=%v", err)
+		logrus.Errorf("UpdateBook@Controller Invalid payload: %v", err)
 		utils.ValidationResponse(c, "invalid request data")
 		return
 	}
@@ -152,10 +183,7 @@ func (ctrl *BookController) UpdateBook(c *gin.Context) {
 		return
 	}
 
-	userIDStr := c.GetHeader("auth_user_id")
-	id, _ := strconv.ParseUint(userIDStr, 10, 32)
-	adminID := uint(id)
-	res, err := ctrl.bookService.UpdateBook(uuid, req, adminID)
+	res, err := ctl.bookService.UpdateBook(uuid, req, adminID)
 	if err != nil {
 		if errors.Is(err, service.ErrBookNotFound) {
 			utils.NotFoundResponse(c, err.Error())
@@ -172,13 +200,19 @@ func (ctrl *BookController) UpdateBook(c *gin.Context) {
 	utils.SuccessResponse(c, "Book updated successfully", res)
 }
 
-func (ctrl *BookController) DeleteBook(c *gin.Context) {
+func (ctl *bookController) DeleteBook(c *gin.Context) {
 	defer func() {
-		if r := recover(); r != nil {
-			logrus.Error("Recovered in DeleteBook: ", r)
-			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", r))
+		if panicInfo := recover(); panicInfo != nil {
+			logrus.Errorf("DeleteBook@Controller panic: %v", panicInfo)
+			utils.InternalServerErrorResponse(c, fmt.Errorf("%v", panicInfo))
 		}
 	}()
+
+	UserId := c.GetHeader("auth_user_id")
+	if UserId == "" {
+		utils.UnauthorizedResponse(c, "Authorization failed: User ID is missing")
+		return
+	}
 
 	uuid := c.Param("uuid")
 	if uuid == "" {
@@ -196,7 +230,7 @@ func (ctrl *BookController) DeleteBook(c *gin.Context) {
 		return
 	}
 
-	err := ctrl.bookService.DeleteBook(uuid)
+	err := ctl.bookService.DeleteBook(uuid)
 	if err != nil {
 		if errors.Is(err, service.ErrBookNotFound) {
 			utils.NotFoundResponse(c, err.Error())

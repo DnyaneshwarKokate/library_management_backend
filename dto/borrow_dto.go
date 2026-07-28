@@ -10,6 +10,10 @@ type BorrowBookRequest struct {
 	BookUUID string `json:"book_uuid" validate:"required" binding:"required"`
 }
 
+type ReturnBookRequest struct {
+	BorrowRecordUUID string `json:"borrow_record_uuid,omitempty"`
+}
+
 type BorrowRecordResponse struct {
 	ID         uint                   `json:"id"`
 	UUID       string                 `json:"uuid"`

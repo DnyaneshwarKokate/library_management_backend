@@ -7,6 +7,8 @@ import (
 	"library-management-backend/model"
 	"library-management-backend/repository"
 	"library-management-backend/utils"
+
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -35,11 +37,15 @@ func NewBookService(bookRepo repository.BookRepository) BookService {
 }
 
 func (s *bookService) CreateBook(req dto.CreateBookRequest, adminID uint) (*dto.BookResponse, error) {
+	logrus.Info("CreateBook@Service Started")
+
 	exists, err := s.bookRepo.ExistsByISBN(req.ISBN)
 	if err != nil {
+		logrus.Errorf("CreateBook@Service ExistsByISBN Error: %v", err)
 		return nil, err
 	}
 	if exists {
+		logrus.Warnf("CreateBook@Service Duplicate ISBN: %s", req.ISBN)
 		return nil, ErrDuplicateISBN
 	}
 
@@ -61,19 +67,23 @@ func (s *bookService) CreateBook(req dto.CreateBookRequest, adminID uint) (*dto.
 
 	savedBook, err := s.bookRepo.StoreBookWithtx(nil, book)
 	if err != nil {
+		logrus.Errorf("CreateBook@Service StoreBook Error: %v", err)
 		return nil, err
 	}
 
-	// Refetch with LEFT JOIN to populate user names in response
 	bookWithNames, err := s.bookRepo.GetBookByUUID(savedBook.UUID)
 	if err == nil && bookWithNames != nil {
+		logrus.Infof("CreateBook@Service Completed successfully for Book ID: %d", savedBook.ID)
 		return s.toBookResponse(bookWithNames), nil
 	}
 
+	logrus.Infof("CreateBook@Service Completed successfully for Book ID: %d", savedBook.ID)
 	return s.toBookResponse(&repository.BookWithUserNames{Book: *savedBook}), nil
 }
 
 func (s *bookService) GetBooks(filter dto.BookFilter) (*dto.BookListResponse, error) {
+	logrus.Info("GetBooks@Service Started")
+
 	if filter.Limit <= 0 {
 		filter.Limit = 10
 	}
@@ -83,6 +93,7 @@ func (s *bookService) GetBooks(filter dto.BookFilter) (*dto.BookListResponse, er
 
 	books, totalCount, filteredCount, err := s.bookRepo.GetBookList(filter)
 	if err != nil {
+		logrus.Errorf("GetBooks@Service GetBookList Error: %v", err)
 		return nil, err
 	}
 
@@ -91,6 +102,7 @@ func (s *bookService) GetBooks(filter dto.BookFilter) (*dto.BookListResponse, er
 		bookResponses = append(bookResponses, *s.toBookResponse(&book))
 	}
 
+	logrus.Infof("GetBooks@Service Completed successfully, TotalCount: %d, FilteredCount: %d", totalCount, filteredCount)
 	return &dto.BookListResponse{
 		TotalCount:    totalCount,
 		FilteredCount: filteredCount,
@@ -99,22 +111,32 @@ func (s *bookService) GetBooks(filter dto.BookFilter) (*dto.BookListResponse, er
 }
 
 func (s *bookService) GetBookByUUID(uuid string) (*dto.BookResponse, error) {
+	logrus.Info("GetBookByUUID@Service Started")
+
 	book, err := s.bookRepo.GetBookByUUID(uuid)
 	if err != nil {
+		logrus.Errorf("GetBookByUUID@Service GetBookByUUID Error: %v", err)
 		return nil, err
 	}
 	if book == nil {
+		logrus.Warnf("GetBookByUUID@Service Book Not Found UUID: %s", uuid)
 		return nil, ErrBookNotFound
 	}
+
+	logrus.Infof("GetBookByUUID@Service Completed successfully for UUID: %s", uuid)
 	return s.toBookResponse(book), nil
 }
 
 func (s *bookService) UpdateBook(uuid string, req dto.UpdateBookRequest, adminID uint) (*dto.BookResponse, error) {
+	logrus.Info("UpdateBook@Service Started")
+
 	existingBookWithNames, err := s.bookRepo.GetBookByUUID(uuid)
 	if err != nil {
+		logrus.Errorf("UpdateBook@Service GetBookByUUID Error: %v", err)
 		return nil, err
 	}
 	if existingBookWithNames == nil {
+		logrus.Warnf("UpdateBook@Service Book Not Found UUID: %s", uuid)
 		return nil, ErrBookNotFound
 	}
 
@@ -122,6 +144,7 @@ func (s *bookService) UpdateBook(uuid string, req dto.UpdateBookRequest, adminID
 	copyDiff := req.TotalCopies - existingBook.TotalCopies
 	newAvailableCopies := existingBook.AvailableCopies + copyDiff
 	if newAvailableCopies < 0 {
+		logrus.Warnf("UpdateBook@Service Invalid Available Copies for UUID: %s", uuid)
 		return nil, ErrInvalidAvailableCopies
 	}
 
@@ -139,36 +162,51 @@ func (s *bookService) UpdateBook(uuid string, req dto.UpdateBookRequest, adminID
 
 	updatedBook, err := s.bookRepo.UpdateBookWithtx(nil, existingBook)
 	if err != nil {
+		logrus.Errorf("UpdateBook@Service UpdateBook Error: %v", err)
 		return nil, err
 	}
 
-	// Refetch with LEFT JOIN to populate updated user names
 	bookWithNames, err := s.bookRepo.GetBookByUUID(updatedBook.UUID)
 	if err == nil && bookWithNames != nil {
+		logrus.Infof("UpdateBook@Service Completed successfully for Book ID: %d", updatedBook.ID)
 		return s.toBookResponse(bookWithNames), nil
 	}
 
+	logrus.Infof("UpdateBook@Service Completed successfully for Book ID: %d", updatedBook.ID)
 	return s.toBookResponse(&repository.BookWithUserNames{Book: *updatedBook}), nil
 }
 
 func (s *bookService) DeleteBook(uuid string) error {
+	logrus.Info("DeleteBook@Service Started")
+
 	existingBook, err := s.bookRepo.GetBookByUUID(uuid)
 	if err != nil {
+		logrus.Errorf("DeleteBook@Service GetBookByUUID Error: %v", err)
 		return err
 	}
 	if existingBook == nil {
+		logrus.Warnf("DeleteBook@Service Book Not Found UUID: %s", uuid)
 		return ErrBookNotFound
 	}
 
 	hasActive, err := s.bookRepo.HasActiveBorrowRecords(existingBook.ID)
 	if err != nil {
+		logrus.Errorf("DeleteBook@Service HasActiveBorrowRecords Error: %v", err)
 		return err
 	}
 	if hasActive {
+		logrus.Warnf("DeleteBook@Service Active Borrow Records Exist for Book ID: %d", existingBook.ID)
 		return ErrActiveBorrowRecordsExist
 	}
 
-	return s.bookRepo.DeleteBookByUUID(uuid)
+	err = s.bookRepo.DeleteBookByUUID(uuid)
+	if err != nil {
+		logrus.Errorf("DeleteBook@Service DeleteBookByUUID Error: %v", err)
+		return err
+	}
+
+	logrus.Infof("DeleteBook@Service Completed successfully for UUID: %s", uuid)
+	return nil
 }
 
 func (s *bookService) toBookResponse(item *repository.BookWithUserNames) *dto.BookResponse {
