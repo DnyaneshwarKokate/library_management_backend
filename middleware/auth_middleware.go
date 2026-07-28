@@ -3,11 +3,10 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	"os"
-	"strings"
-
 	"library-management-backend/constants"
 	"library-management-backend/utils"
+	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
