@@ -49,7 +49,6 @@ func NewBorrowService(borrowRepo repository.BorrowRepository, bookRepo repositor
 func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto.BorrowRecordResponse, error) {
 	logrus.Info("BorrowBook@Service Started")
 
-	// 1. Verify User
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
 		logrus.Errorf("BorrowBook@Service FindByID Error: %v", err)
@@ -63,8 +62,6 @@ func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto
 		logrus.Warnf("BorrowBook@Service Inactive User ID: %d", userID)
 		return nil, ErrUserInactive
 	}
-
-	// 2. Verify Book
 	bookWithNames, err := s.bookRepo.GetBookByUUID(req.BookUUID)
 	if err != nil {
 		logrus.Errorf("BorrowBook@Service GetBookByUUID Error: %v", err)
@@ -79,7 +76,6 @@ func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto
 		return nil, ErrBookOutOfStock
 	}
 
-	// 3. Check duplicate borrow for same book
 	alreadyBorrowed, err := s.borrowRepo.HasActiveBorrowForBook(userID, bookWithNames.ID)
 	if err != nil {
 		logrus.Errorf("BorrowBook@Service HasActiveBorrowForBook Error: %v", err)
@@ -90,7 +86,6 @@ func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto
 		return nil, ErrBookAlreadyBorrowed
 	}
 
-	// 4. Check active borrow limit (Max 3 active books)
 	activeCount, err := s.borrowRepo.CountActiveBorrowsByUser(userID)
 	if err != nil {
 		logrus.Errorf("BorrowBook@Service CountActiveBorrowsByUser Error: %v", err)
@@ -101,7 +96,6 @@ func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto
 		return nil, ErrBorrowLimitExceeded
 	}
 
-	// 5. Execute ACID Transaction with Pessimistic Locking (FOR UPDATE)
 	tx := database.LibraryManagementDB.Begin()
 	if tx.Error != nil {
 		logrus.Errorf("BorrowBook@Service transaction begin error: %v", tx.Error)
@@ -114,7 +108,6 @@ func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto
 		}
 	}()
 
-	// Lock book row FOR UPDATE to prevent race conditions during concurrent borrowing
 	lockedBook, err := s.borrowRepo.GetBookForUpdateWithtx(tx, bookWithNames.ID)
 	if err != nil {
 		tx.Rollback()
@@ -138,7 +131,7 @@ func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto
 	}
 
 	now := time.Now()
-	dueDate := now.AddDate(0, 0, 14) // 14 Days from borrowing
+	dueDate := now.AddDate(0, 0, 14)
 
 	var createdBy *uint
 	if userID > 0 {
@@ -167,7 +160,6 @@ func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto
 		return nil, err
 	}
 
-	// 6. Refetch with joined names for response
 	refetchedRecord, err := s.borrowRepo.GetBorrowRecordByUUID(savedRecord.UUID)
 	if err == nil && refetchedRecord != nil {
 		logrus.Infof("BorrowBook@Service Completed successfully for Borrow ID: %d", savedRecord.ID)
@@ -181,7 +173,6 @@ func (s *borrowService) BorrowBook(req dto.BorrowBookRequest, userID uint) (*dto
 func (s *borrowService) ReturnBook(recordUUID string, userID uint) (*dto.BorrowRecordResponse, error) {
 	logrus.Info("ReturnBook@Service Started")
 
-	// 1. Fetch borrow record
 	recordWithNames, err := s.borrowRepo.GetBorrowRecordByUUID(recordUUID)
 	if err != nil {
 		logrus.Errorf("ReturnBook@Service GetBorrowRecordByUUID Error: %v", err)
@@ -192,19 +183,16 @@ func (s *borrowService) ReturnBook(recordUUID string, userID uint) (*dto.BorrowR
 		return nil, ErrBorrowRecordNotFound
 	}
 
-	// 2. Verify ownership
 	if recordWithNames.UserID != userID {
 		logrus.Warnf("ReturnBook@Service Unauthorized Return Attempt User ID: %d, Record Owner: %d", userID, recordWithNames.UserID)
 		return nil, ErrUnauthorizedReturn
 	}
 
-	// 3. Verify status
 	if recordWithNames.Status == constants.StatusReturned {
 		logrus.Warnf("ReturnBook@Service Already Returned Record UUID: %s", recordUUID)
 		return nil, ErrAlreadyReturned
 	}
 
-	// 4. Transaction to update status and increment available copies
 	tx := database.LibraryManagementDB.Begin()
 	if tx.Error != nil {
 		logrus.Errorf("ReturnBook@Service transaction begin error: %v", tx.Error)
@@ -235,7 +223,6 @@ func (s *borrowService) ReturnBook(recordUUID string, userID uint) (*dto.BorrowR
 		return nil, err
 	}
 
-	// 5. Refetch record
 	refetchedRecord, err := s.borrowRepo.GetBorrowRecordByUUID(recordUUID)
 	if err == nil && refetchedRecord != nil {
 		logrus.Infof("ReturnBook@Service Completed successfully for Record ID: %d", recordWithNames.ID)

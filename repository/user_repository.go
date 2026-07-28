@@ -11,7 +11,7 @@ import (
 )
 
 type UserRepository interface {
-	StoreUserWithtx(tx *gorm.DB, userDetails *model.User) (*model.User, error)
+	StoreUser(tx *gorm.DB, userDetails *model.User) (*model.User, error)
 	FindByEmail(email string) (*model.User, error)
 	FindByUUID(uuid string) (*model.User, error)
 	FindByID(id uint) (*model.User, error)
@@ -33,7 +33,7 @@ func (r *userRepository) getDB() *gorm.DB {
 	return database.LibraryManagementDB
 }
 
-func (r *userRepository) StoreUserWithtx(tx *gorm.DB, userDetails *model.User) (*model.User, error) {
+func (r *userRepository) StoreUser(tx *gorm.DB, userDetails *model.User) (*model.User, error) {
 	if tx == nil {
 		tx = r.getDB()
 	}

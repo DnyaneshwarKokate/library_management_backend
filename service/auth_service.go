@@ -79,7 +79,7 @@ func (s *authService) Register(req dto.RegisterRequest) error {
 		Status:       status,
 	}
 
-	storedUser, err := s.userRepo.StoreUserWithtx(nil, user)
+	storedUser, err := s.userRepo.StoreUser(nil, user)
 	if err != nil {
 		logrus.Errorf("Register@Service StoreUser Error: %v", err)
 		return err
