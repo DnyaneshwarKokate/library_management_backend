@@ -69,5 +69,11 @@ func SetupRouter(ctl *app.ConsentRequestController) *gin.Engine {
 
 	router.POST("/my-borrowings", middleware.AuthMiddleware(jwtSecret), ctl.BorrowController.GetMyBorrowings)
 
+	adminGroup := router.Group("/admin", middleware.AuthMiddleware(jwtSecret), middleware.RequireRole(constants.RoleAdmin))
+	{
+		adminGroup.POST("/dashboard", ctl.DashboardController.GetDashboardStats)
+		adminGroup.GET("/dashboard", ctl.DashboardController.GetDashboardStats)
+	}
+
 	return router
 }

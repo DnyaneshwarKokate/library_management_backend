@@ -11,21 +11,24 @@ type App struct {
 }
 
 type ConsentRequestController struct {
-	AuthController   controller.AuthController
-	BookController   controller.BookController
-	BorrowController controller.BorrowController
+	AuthController      controller.AuthController
+	BookController      controller.BookController
+	BorrowController    controller.BorrowController
+	DashboardController controller.DashboardController
 }
 
 type Services struct {
-	AuthService   service.AuthService
-	BookService   service.BookService
-	BorrowService service.BorrowService
+	AuthService      service.AuthService
+	BookService      service.BookService
+	BorrowService    service.BorrowService
+	DashboardService service.DashboardService
 }
 
 type Repositories struct {
-	UserRepository   repository.UserRepository
-	BookRepository   repository.BookRepository
-	BorrowRepository repository.BorrowRepository
+	UserRepository      repository.UserRepository
+	BookRepository      repository.BookRepository
+	BorrowRepository    repository.BorrowRepository
+	DashboardRepository repository.DashboardRepository
 }
 
 func InitApp() *App {
@@ -40,24 +43,27 @@ func InitApp() *App {
 
 func initRepositories() *Repositories {
 	return &Repositories{
-		UserRepository:   repository.NewUserRepository(),
-		BookRepository:   repository.NewBookRepository(),
-		BorrowRepository: repository.NewBorrowRepository(),
+		UserRepository:      repository.NewUserRepository(),
+		BookRepository:      repository.NewBookRepository(),
+		BorrowRepository:    repository.NewBorrowRepository(),
+		DashboardRepository: repository.NewDashboardRepository(),
 	}
 }
 
 func initServices(repos *Repositories) *Services {
 	return &Services{
-		AuthService:   service.NewAuthService(repos.UserRepository),
-		BookService:   service.NewBookService(repos.BookRepository),
-		BorrowService: service.NewBorrowService(repos.BorrowRepository, repos.BookRepository, repos.UserRepository),
+		AuthService:      service.NewAuthService(repos.UserRepository),
+		BookService:      service.NewBookService(repos.BookRepository),
+		BorrowService:    service.NewBorrowService(repos.BorrowRepository, repos.BookRepository, repos.UserRepository),
+		DashboardService: service.NewDashboardService(repos.DashboardRepository),
 	}
 }
 
 func initControllers(services *Services) *ConsentRequestController {
 	return &ConsentRequestController{
-		AuthController:   controller.NewAuthController(services.AuthService),
-		BookController:   controller.NewBookController(services.BookService),
-		BorrowController: controller.NewBorrowController(services.BorrowService),
+		AuthController:      controller.NewAuthController(services.AuthService),
+		BookController:      controller.NewBookController(services.BookService),
+		BorrowController:    controller.NewBorrowController(services.BorrowService),
+		DashboardController: controller.NewDashboardController(services.DashboardService),
 	}
 }
