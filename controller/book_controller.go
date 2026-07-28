@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"library-management-backend/dto"
-	"library-management-backend/middleware"
 	"library-management-backend/service"
 	"library-management-backend/utils"
 
@@ -22,15 +22,6 @@ func NewBookController(bookService service.BookService) *BookController {
 	return &BookController{
 		bookService: bookService,
 	}
-}
-
-func getAdminID(c *gin.Context) uint {
-	if val, exists := c.Get(middleware.ContextUserID); exists {
-		if id, ok := val.(uint); ok {
-			return id
-		}
-	}
-	return 0
 }
 
 func (ctrl *BookController) CreateBook(c *gin.Context) {
@@ -53,7 +44,9 @@ func (ctrl *BookController) CreateBook(c *gin.Context) {
 		return
 	}
 
-	adminID := getAdminID(c)
+	userIDStr := c.GetHeader("auth_user_id")
+	id, _ := strconv.ParseUint(userIDStr, 10, 32)
+	adminID := uint(id)
 	res, err := ctrl.bookService.CreateBook(req, adminID)
 	if err != nil {
 		if errors.Is(err, service.ErrDuplicateISBN) {
@@ -159,7 +152,9 @@ func (ctrl *BookController) UpdateBook(c *gin.Context) {
 		return
 	}
 
-	adminID := getAdminID(c)
+	userIDStr := c.GetHeader("auth_user_id")
+	id, _ := strconv.ParseUint(userIDStr, 10, 32)
+	adminID := uint(id)
 	res, err := ctrl.bookService.UpdateBook(uuid, req, adminID)
 	if err != nil {
 		if errors.Is(err, service.ErrBookNotFound) {

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"library-management-backend/dto"
-	"library-management-backend/middleware"
 	"library-management-backend/service"
 	"library-management-backend/utils"
 
@@ -24,15 +24,6 @@ func NewBorrowController(borrowService service.BorrowService) *BorrowController 
 	}
 }
 
-func getUserID(c *gin.Context) uint {
-	if val, exists := c.Get(middleware.ContextUserID); exists {
-		if id, ok := val.(uint); ok {
-			return id
-		}
-	}
-	return 0
-}
-
 func (ctrl *BorrowController) BorrowBook(c *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -41,7 +32,9 @@ func (ctrl *BorrowController) BorrowBook(c *gin.Context) {
 		}
 	}()
 
-	userID := getUserID(c)
+	userIDStr := c.GetHeader("auth_user_id")
+	id, _ := strconv.ParseUint(userIDStr, 10, 32)
+	userID := uint(id)
 	if userID == 0 {
 		utils.UnauthorizedResponse(c, "User context missing")
 		return
